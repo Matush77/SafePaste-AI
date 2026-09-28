@@ -2,20 +2,24 @@
 //
 //   npm run eval                        report and compare with the baseline
 //   npm run eval -- --verbose           also list every miss and false positive
+//   npm run eval -- --holdout           score the held-out set instead (see corpus.js)
 //   npm run eval:update-baseline        accept the current scores as the new baseline
+//                                       (for both the main and held-out sets)
 //
 // Exits with code 1 if any score is worse than the baseline.
 
-import { findRegressions, readBaseline, writeBaseline } from "./baseline.js";
-import { loadCorpus } from "./corpus.js";
+import { BASELINE_PATH, HOLDOUT_BASELINE_PATH, findRegressions, readBaseline, writeBaseline } from "./baseline.js";
+import { CORPUS_DIR, HOLDOUT_DIR, loadCorpus } from "./corpus.js";
 import { scoreCorpus } from "./score.js";
 
 const args = new Set(process.argv.slice(2));
-const report = scoreCorpus(loadCorpus());
-const baseline = readBaseline();
+const holdout = args.has("--holdout");
+const report = scoreCorpus(loadCorpus(holdout ? HOLDOUT_DIR : CORPUS_DIR));
+const baselinePath = holdout ? HOLDOUT_BASELINE_PATH : BASELINE_PATH;
+const baseline = readBaseline(baselinePath);
 const pct = (/** @type {number} */ value) => `${(value * 100).toFixed(1)}%`;
 
-console.log(`\nCorpus: ${report.counts.labelled} labelled samples (${report.counts.goldSpans} sensitive values), ${report.counts.benign} benign samples\n`);
+console.log(`\n${holdout ? "Held-out set" : "Corpus"}: ${report.counts.labelled} labelled samples (${report.counts.goldSpans} sensitive values), ${report.counts.benign} benign samples\n`);
 
 console.table({
   recall: pct(report.overall.recall),
@@ -51,8 +55,11 @@ if (args.has("--verbose")) {
 }
 
 if (args.has("--update-baseline")) {
-  writeBaseline(report);
-  console.log("\nBaseline updated. Commit tests/eval/baseline.json with the change that moved the scores.");
+  writeBaseline(report, baselinePath);
+  if (!holdout) {
+    writeBaseline(scoreCorpus(loadCorpus(HOLDOUT_DIR)), HOLDOUT_BASELINE_PATH);
+  }
+  console.log("\nBaselines updated. Commit tests/eval/baseline*.json with the change that moved the scores.");
 } else if (!baseline) {
   console.log("\nNo baseline yet. Run `npm run eval:update-baseline` to create one.");
 } else {

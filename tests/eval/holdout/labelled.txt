@@ -1,0 +1,105 @@
+=== holdout/slack-export
+[09:14] «people:Nadia Petrenko»: can someone reset the staging db? creds are admin / «credentials:St4ging!Reset»
+[09:16] «people:Carlos Mendoza»: done. also the new sentry dsn is «credentials:https://4f8a1c2b9d7e4a6f8b3c1d5e7f9a2b4c@o451234.ingest.sentry.io/5512345»
+[09:17] «people:Nadia Petrenko»: thx 🙏
+
+=== holdout/yaml-ci
+deploy:
+  stage: deploy
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    DOCKER_AUTH: «credentials:ZG9ja2VyOnNlY3JldHBhc3N3b3JkMTIz»
+  script:
+    - echo "«apiKeys:dckr_pat_2kL9xQ7mN4pR8sT1vW6yZ3aB5c»" | docker login -u ci-bot --password-stdin
+
+=== holdout/customer-email-fr
+Bonjour, je m'appelle «people:Camille Durand» et j'habite au «addresses:14 rue des Lilas», «addresses:69003 Lyon». Mon numéro est le «phones:06 12 34 56 78» et mon e-mail «emails:camille.durand@orange.fr».
+
+=== holdout/php-config
+<?php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'wp_admin');
+define('DB_PASSWORD', '«credentials:Wp#2024secure»');
+define('AUTH_KEY', '«credentials:k]8Lz!p2X@q9#Rm4$Tv7&Wb1^Yc6*Nd3»');
+
+=== holdout/patient-referral
+Referral: «people:Samir Haddad», born «governmentIds:12 August 1969», NHS number «governmentIds:943 476 5919». Lives at «addresses:9 Orchard Close», «addresses:Bristol BS8 2QT». GP: Dr. «people:Eleanor Voss».
+
+=== holdout/bank-transfer-cz
+Pošli prosím platbu na účet «financial:CZ65 0800 0000 1920 0014 5399», variabilní symbol 20240517, příjemce «people:Petr Dvořák».
+
+=== holdout/stripe-webhook-test
+Why is signature verification failing?
+endpoint_secret = "«credentials:whsec_1a2b3c4d5e6f7g8h9i0jKLMNOPQRSTUV»"
+stripe.api_key = "«apiKeys:rk_live_51KxQmP2eZvKYlo2C8fT3nR6wLpJ4sD9uBqWe»"
+
+=== holdout/html-contact-page
+<div class="vcard">
+  <span class="fn">«people:Yusuf Demir»</span>
+  <a href="mailto:«emails:y.demir@kestrel-legal.co.uk»">Email</a>
+  <span class="tel">«phones:+44 161 496 0321»</span>
+</div>
+
+=== holdout/interview-notes
+Interviewed «people:Leila Farahani» today. She currently works at «organizations:Brightwave Analytics Ltd» and wants 95k. Reference: her previous manager «people:Owen Gallagher», «phones:(503) 555-0199».
+
+=== holdout/ssh-private-ec
+-----BEGIN EC PRIVATE KEY-----
+«apiKeys:MHcCAQEEIBkg4LVWM9nuwNSk3yByxZpYRTBnVJk5oB0sbpZkjJ2UoAoGCCqGSM49
+AwEHoUQDQgAE3Y4Mt2q2Bf4fM9dZ8yPq0dQ3oO3a0n0r1YxK9pRk0Yx8m1nqZkO9hL
+2vQ8wR4tK6nJ1cX5bF0aD3gE7iU2oP9sM4lN8rT6yV1»
+-----END EC PRIVATE KEY-----
+
+=== holdout/azure-connection
+AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=prodassets;AccountKey=«credentials:Zm9vYmFyYmF6cXV4MTIzNDU2Nzg5MGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OQ==»;EndpointSuffix=core.windows.net"
+
+=== holdout/router-log
+Jan 12 03:22:10 gw01 sshd[2231]: Failed password for root from «network:185.220.101.34» port 51122 ssh2
+Jan 12 03:22:14 gw01 kernel: DHCP lease «network:192.168.10.57» to «network:a4:5e:60:c1:2f:9b»
+
+=== holdout/tax-form
+Please fill in the 1099: payee «people:Rachel Kim», TIN «governmentIds:987-65-4321», address «addresses:1200 Pine St Unit 5», «addresses:Seattle, WA 98101».
+
+=== holdout/polish-invoice
+Faktura dla: «organizations:Zielony Ogród Sp. z o.o.», NIP «governmentIds:525-000-12-34», konto «financial:PL61 1090 1014 0000 0712 1981 2874».
+
+=== holdout/password-reset-email
+Hi «people:Marcus»,
+Use this link to reset your password: «credentials:https://accounts.example-shop.com/reset?token=b7e1c9d2f3a4e5b6c7d8e9f0a1b2c3d4&uid=88213»
+The link expires in 30 minutes.
+
+=== holdout/docker-run
+docker run -e POSTGRES_PASSWORD=«credentials:pgAdm1n_2024» -e PGADMIN_DEFAULT_EMAIL=«emails:it-admin@harborview-clinic.org» -p 5432:5432 postgres:16
+
+=== holdout/japanese-customer
+Customer «people:Haruto Nakamura» (tel «phones:+81 90 1234 5678») wants to change the delivery address to «addresses:2-14-3 Nagatacho», «addresses:Chiyoda-ku, Tokyo 100-0014».
+
+=== holdout/terraform-vars
+variable "db_password" {
+  default = "«credentials:tf-Secret-9981»"
+}
+provider "datadog" {
+  api_key = "«credentials:3f2a9c8b7d6e5f4a3b2c1d0e9f8a7b6c»"
+}
+
+=== holdout/crypto-wallet
+Send the refund to my wallet «financial:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh» or IBAN «financial:ES91 2100 0418 4502 0005 1332».
+
+=== holdout/hr-dismissal
+Draft a termination letter for «people:Kofi Boateng», employee no. «governmentIds:48213», effective 30 June. His home address is «addresses:73 Harrow Road», «addresses:London W2 5EH».
+
+=== holdout/lowercase-contact
+yo text me at «phones:917-555-0143» or hit up «emails:jaydenr99@yahoo.com», im at «addresses:55 bedford ave apt 3r» brooklyn
+
+=== holdout/basic-auth-header
+GET /internal/metrics HTTP/1.1
+Host: metrics.corp.local
+Authorization: Basic «credentials:YWRtaW46UzNjcjN0UGFzc3dvcmQ=»
+
+=== holdout/italian-address
+Spedire a: «people:Giulia Romano», «addresses:Via Garibaldi 21», «addresses:20121 Milano», cell. «phones:+39 347 123 4567»
+
+=== holdout/netrc
+machine api.heroku.com
+  login «emails:deploy@parcelwise-ops.com»
+  password «credentials:8c2f6a1e-4b3d-4e9f-a7c5-1d2e3f4a5b6c»

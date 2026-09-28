@@ -1,0 +1,101 @@
+=== holdout-benign/node-auth-middleware
+export function requireAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "missing token" });
+  }
+  const token = header.slice(7);
+  req.user = verifyToken(token, config.jwtSecret);
+  next();
+}
+
+=== holdout-benign/django-settings
+SECRET_KEY = env("DJANGO_SECRET_KEY")
+DEBUG = env.bool("DEBUG", default=False)
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+DATABASES = {"default": env.db("DATABASE_URL")}
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.Argon2PasswordHasher"]
+
+=== holdout-benign/history-essay
+Write an essay on how Napoleon Bonaparte's campaigns in Egypt influenced French scholarship, and how Jean-François Champollion later deciphered the Rosetta Stone.
+
+=== holdout-benign/unit-conversion
+Convert 72 degrees Fahrenheit to Celsius, 5 miles to kilometres, and 3.5 cups of flour to grams.
+
+=== holdout-benign/log-with-durations
+2024-06-01T12:00:03.114Z INFO  request completed method=GET path=/api/items status=200 duration_ms=48
+2024-06-01T12:00:03.902Z WARN  slow query took 1203ms rows=5000
+2024-06-01T12:00:04.001Z ERROR upstream returned 503 retry=2/5
+
+=== holdout-benign/semver-and-hashes
+Bumped lodash from 4.17.20 to 4.17.21 (commit 3b18f2a). The lockfile integrity is sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==.
+
+=== holdout-benign/city-comparison
+Is it cheaper to live in Vienna, Munich or Copenhagen as a software engineer? Compare rent and taxes.
+
+=== holdout-benign/company-analysis
+Compare the business models of Netflix, Spotify and Disney+ and explain why Apple Music bundles with iCloud.
+
+=== holdout-benign/physics-homework
+A 2 kg mass on a 30 degree incline with friction coefficient 0.25 — find the acceleration. Use g = 9.81 m/s^2.
+
+=== holdout-benign/excel-formula
+Why does =VLOOKUP(A2, Sheet2!$A$1:$D$500, 4, FALSE) return #N/A for row 1432 when the value exists?
+
+=== holdout-benign/kotlin-data-class
+data class Account(
+    val id: Long,
+    val username: String,
+    val passwordHash: String,
+    val createdAt: Instant = Instant.now()
+)
+
+=== holdout-benign/sql-migration
+ALTER TABLE users ADD COLUMN password_reset_token VARCHAR(64);
+CREATE INDEX idx_users_email ON users (email);
+UPDATE users SET status = 'active' WHERE last_login > NOW() - INTERVAL '90 days';
+
+=== holdout-benign/public-documentation-urls
+The OAuth 2.0 spec is at https://datatracker.ietf.org/doc/html/rfc6749 and the Auth0 guide at https://auth0.com/docs/secure/tokens/access-tokens explains token lifetimes.
+
+=== holdout-benign/game-rules
+In chess, the knight moves in an L-shape: two squares in one direction and one square perpendicular. Castling requires that neither the king nor the rook has moved.
+
+=== holdout-benign/tracking-and-order-ids
+Order #A-2024-118273 was split into shipments 1Z999AA10123456784 and 1Z999AA10123456795. Refund reference RF-88213-X.
+
+=== holdout-benign/timezones
+Schedule the call for 16:00 CET, which is 10:00 in New York and 23:00 in Tokyo. The meeting ID will be sent separately.
+
+=== holdout-benign/regex-for-emails
+Is this regex good enough for validating emails: ^[\w.+-]+@[\w-]+\.[\w.-]+$ ? What about phone numbers like ^\+?[0-9 ()-]{7,20}$ ?
+
+=== holdout-benign/network-tutorial
+Explain the difference between a /24 and a /16 subnet. For example 192.168.1.0/24 has 256 addresses. What does 255.255.255.0 mean?
+
+=== holdout-benign/movie-plot
+Summarize the plot of The Godfather, focusing on Michael Corleone's transformation and his relationship with Kay Adams.
+
+=== holdout-benign/json-schema
+{
+  "type": "object",
+  "properties": {
+    "email": { "type": "string", "format": "email" },
+    "password": { "type": "string", "minLength": 12 },
+    "phone": { "type": "string", "pattern": "^\\+[1-9]\\d{1,14}$" }
+  },
+  "required": ["email", "password"]
+}
+
+=== holdout-benign/budget-table
+| Item        | Q1      | Q2      |
+|-------------|---------|---------|
+| Salaries    | 120,000 | 124,500 |
+| Cloud       | 18,250  | 21,900  |
+| Marketing   | 9,000   | 12,000  |
+
+=== holdout-benign/placeholder-config
+api_key: YOUR_API_KEY_HERE
+password: ********
+token: <insert token>
+client_secret: REPLACE_ME

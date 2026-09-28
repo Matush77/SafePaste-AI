@@ -4,6 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export const BASELINE_PATH = fileURLToPath(new URL("./baseline.json", import.meta.url));
+export const HOLDOUT_BASELINE_PATH = fileURLToPath(new URL("./baseline-holdout.json", import.meta.url));
 
 // Scores are rounded to 4 decimals; ignore differences below that.
 const TOLERANCE = 0.00005;
@@ -26,14 +27,20 @@ export function toBaseline(report) {
   };
 }
 
-/** @returns {Baseline | null} */
-export function readBaseline() {
-  return existsSync(BASELINE_PATH) ? JSON.parse(readFileSync(BASELINE_PATH, "utf8")) : null;
+/**
+ * @param {string} [path]
+ * @returns {Baseline | null}
+ */
+export function readBaseline(path = BASELINE_PATH) {
+  return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : null;
 }
 
-/** @param {Report} report */
-export function writeBaseline(report) {
-  writeFileSync(BASELINE_PATH, `${JSON.stringify(toBaseline(report), null, 2)}\n`);
+/**
+ * @param {Report} report
+ * @param {string} [path]
+ */
+export function writeBaseline(report, path = BASELINE_PATH) {
+  writeFileSync(path, `${JSON.stringify(toBaseline(report), null, 2)}\n`);
 }
 
 /**

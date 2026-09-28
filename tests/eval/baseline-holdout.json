@@ -1,0 +1,41 @@
+{
+  "overall": {
+    "recall": 0.5362,
+    "precision": 0.7069,
+    "f1": 0.6098,
+    "leakedCharRate": 0.3663,
+    "benignUnchanged": 0.5909
+  },
+  "recallByCategory": {
+    "addresses": 0.5385,
+    "apiKeys": 0.6667,
+    "credentials": 0.3077,
+    "emails": 1,
+    "financial": 0.75,
+    "governmentIds": 0.4,
+    "network": 1,
+    "organizations": 0.5,
+    "people": 0.3333,
+    "phones": 0.8333
+  },
+  "precisionByCategory": {
+    "addresses": 1,
+    "apiKeys": 1,
+    "credentials": 0.4545,
+    "emails": 1,
+    "financial": 1,
+    "governmentIds": 1,
+    "locations": 0.1667,
+    "network": 0.5,
+    "organizations": 1,
+    "people": 0.8333,
+    "phones": 0.75
+  },
+  "counts": {
+    "samples": 46,
+    "labelled": 24,
+    "benign": 22,
+    "goldSpans": 69,
+    "predictions": 58
+  }
+}

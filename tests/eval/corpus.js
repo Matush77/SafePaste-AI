@@ -12,7 +12,10 @@ import { DEFAULT_SETTINGS } from "../../src/redactor.js";
  * @typedef {{ id: string, file: string, benign: boolean, text: string, gold: GoldSpan[] }} Sample
  */
 
-const CORPUS_DIR = fileURLToPath(new URL("./corpus/", import.meta.url));
+export const CORPUS_DIR = fileURLToPath(new URL("./corpus/", import.meta.url));
+// Held-out samples: never tune detectors against these; they show whether
+// improvements on the main corpus generalise.
+export const HOLDOUT_DIR = fileURLToPath(new URL("./holdout/", import.meta.url));
 const CATEGORIES = new Set(Object.keys(DEFAULT_SETTINGS.categories));
 const LABEL = /«(\w+):([^«»]*)»/g;
 
