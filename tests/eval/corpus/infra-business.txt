@@ -1,0 +1,48 @@
+=== infra/nginx-access-log
+What's causing these 502s?
+«network:203.0.113.45» - - [12/Mar/2025:10:14:22 +0000] "GET /api/orders HTTP/1.1" 502 157 "-" "Mozilla/5.0"
+«network:198.51.100.7» - - [12/Mar/2025:10:14:23 +0000] "POST /api/checkout HTTP/1.1" 502 157 "-" "curl/8.4.0"
+upstream: http://«network:10.12.4.31»:8080/api/checkout, upstream timed out (110: Connection timed out)
+
+=== infra/ssh-config
+Host bastion
+  HostName «network:52.28.119.4»
+  User ec2-user
+  IdentityFile ~/.ssh/prod-bastion.pem
+Host db-primary
+  HostName «network:172.31.18.220»
+  ProxyJump bastion
+
+=== infra/ipv6-and-mac
+Interface eth0:
+  inet6 «network:2001:db8:85a3::8a2e:370:7334»/64
+  ether «network:3c:22:fb:9a:41:0e»
+
+=== infra/terraform-state-snippet
+resource "aws_instance" "worker" {
+  private_ip = "«network:10.0.1.57»"
+  tags = { Owner = "«emails:platform-team@novacart.io»" }
+}
+
+=== business/customer-escalation-email
+Help me reply to this escalation:
+
+«people:Laura Mendes» from «organizations:Pinecrest Dental Group» says the integration with our scheduling API has been down for two days and they are considering moving to a competitor. Their account ID is 88213. Her direct line is «phones:+1 720 555 0165».
+
+=== business/contract-summary
+Summarize the key obligations in this contract between «organizations:Quantis Biotech GmbH» and «organizations:Meridian Clinical Research Ltd.» for the Phase II trial in «locations:Graz».
+
+=== business/sales-pipeline
+Q3 pipeline:
+- «organizations:Holloway Freight Inc.» - $240k - contact «people:Ben Carver»
+- «organizations:Tessera Home Health» - $95k - contact «people:Rosa Delgado»
+- «organizations:Blue Fjord Seafood AS» - $180k - contact «people:Nils Haugen»
+
+=== business/employee-relocation
+«people:Dmitri Volkov» is relocating from «locations:Tallinn» to our «locations:Lisbon» office on 1 May; his new home address is «addresses:Rua da Prata 118», «addresses:1100-418 Lisboa».
+
+=== business/insurance-claim
+Claim #CL-2024-77812 for policyholder «people:Grace Whitfield», policy «financial:HP-4471-9920-03», insurer «organizations:Northgate Mutual». Draft a summary for the adjuster.
+
+=== business/internal-urls
+Our staging dashboard «urls:https://grafana.staging.corp.novacart.io/d/7Hk2/checkout» shows latency spikes. Link to the runbook: «urls:https://wiki.corp.novacart.io/ops/checkout-runbook».

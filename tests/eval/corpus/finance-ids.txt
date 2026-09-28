@@ -1,0 +1,54 @@
+=== finance/card-numbers-formats
+Why is my payment form rejecting these test cards?
+Visa: «financial:4111 1111 1111 1111»
+Mastercard: «financial:5555-5555-5555-4444»
+Amex: «financial:3782 822463 10005»
+Discover: «financial:6011111111111117»
+
+=== finance/iban-various-countries
+Vendor payment details:
+- DE: «financial:DE89 3704 0044 0532 0130 00»
+- UK: «financial:GB82 WEST 1234 5698 7654 32»
+- SK: «financial:SK31 1200 0000 1987 4263 7541»
+- NL: «financial:NL91ABNA0417164300»
+
+=== finance/wire-instructions
+Please double-check these wire instructions before I send them to the client:
+Beneficiary: «organizations:Harbor & Finch Consulting LLC»
+Bank: First Republic
+Account number: «financial:004417822913»
+Routing number (ABA): «financial:021000021»
+SWIFT: «financial:FRBBUS6S»
+
+=== finance/invoice-not-sensitive-amounts
+Can you check the math on invoice INV-2024-00318? Subtotal $12,480.00, tax 8.25% = $1,029.60, total $13,509.60. Payment due within 30 days.
+
+=== finance/card-in-support-chat
+customer wrote: "my card «financial:4242424242424242» exp 09/27 cvv «financial:123» keeps getting declined, what do i do"
+
+=== government/ssn-formats
+Clean up this spreadsheet column so all SSNs use the same format:
+«governmentIds:123-45-6789»
+«governmentIds:078 05 1120»
+«governmentIds:219099999»
+
+=== government/ssn-in-sentence
+The applicant's social security number is «governmentIds:457-55-5462» and her date of birth is «governmentIds:March 3, 1985».
+
+=== government/ein-and-tax
+Our EIN is «governmentIds:12-3456789». Fill it into the W-9 template.
+
+=== government/passport-and-license
+Traveler: «people:Samuel Osei»
+Passport No. «governmentIds:X12345678»
+Driver's license: «governmentIds:D1234567»
+Date of birth: «governmentIds:1990-11-02»
+
+=== government/uk-ni-number
+My National Insurance number is «governmentIds:QQ 12 34 56 C», which form do I need?
+
+=== government/slovak-birth-number
+Rodné číslo: «governmentIds:851203/4417», číslo OP: «governmentIds:EA123456»
+
+=== government/dob-iso
+Patient «people:Aiko Yamamoto» (DOB «governmentIds:1978-06-21») reports mild headaches.

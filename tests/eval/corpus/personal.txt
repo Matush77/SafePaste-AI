@@ -1,0 +1,97 @@
+=== personal/support-ticket-us
+Summarize this ticket and draft a reply:
+
+From: «people:Rebecca Thornton» <«emails:rthornton82@gmail.com»>
+Hi, my order never arrived. I've been a customer for 6 years. Please ship it to «addresses:4417 Maple Ridge Dr» «addresses:Columbus, OH 43215» or call me at «phones:(614) 555-0187».
+Thanks, «people:Rebecca»
+
+=== personal/slovak-names-diacritics
+Prelož do angličtiny: Dobrý deň, volám sa «people:Tomáš Kováčik» a bývam v «locations:Košiciach». Môj kolega «people:Ján Novák» vám pošle zmluvu na «emails:jan.novak@firma.sk».
+
+=== personal/international-names
+Please rank these candidates for the backend role:
+1. «people:Wei Zhang» - 6 years Go, strong on distributed systems
+2. «people:Olumide Adebayo» - 4 years Java, led a migration to Kafka
+3. «people:Siobhán Ní Bhriain» - 8 years Python, some Rust
+4. «people:Gaurav Venkataraman» - 3 years TypeScript
+
+=== personal/lowercase-chat-style
+hey can u help me write a msg to «people:kevin o'brien», his number is «phones:+1 312 555 0144» and he lives at «addresses:2231 w division st», «locations:chicago»
+
+=== personal/eu-phone-formats
+Contact list for the event:
+- Bratislava office: «phones:+421 905 123 456»
+- «people:Marta Horváthová»: «phones:0905 987 654»
+- London: «phones:020 7946 0958»
+- Berlin: «phones:+49 30 901820»
+- Paris: «phones:01 42 68 53 00»
+
+=== personal/uk-address-block
+Please format this as a shipping label:
+«people:Harriet Pembroke»
+«addresses:Flat 3, 27 Wellington Road»
+«addresses:Leeds LS3 1BQ»
+
+=== personal/german-address
+Rechnungsadresse: «people:Lukas Brandt», «addresses:Kastanienallee 45», «addresses:10435 Berlin»
+
+=== personal/email-signature
+Can you make this signature look more professional?
+
+Best,
+«people:Daniel Okafor»
+Senior Account Manager
+«phones:+1 (646) 555-0112 ext. 204»
+«emails:d.okafor@brightlane-logistics.com»
+
+=== personal/hr-performance-review
+Rewrite this feedback to be kinder:
+«people:Priya Raman» has missed three deadlines this quarter and «people:Tom Alvarez» (her manager) says she is "not a culture fit". Her employee ID is «governmentIds:E-448120».
+
+=== personal/medical-note
+Explain these lab results in plain language for the patient:
+Patient: «people:Margaret Liu», DOB «governmentIds:04/17/1956», MRN «governmentIds:00482291»
+HbA1c 8.2%, fasting glucose 164 mg/dL, eGFR 58.
+
+=== personal/single-first-name-greeting
+Dear «people:Anneke», thanks for the call yesterday. As discussed I'll send the revised quote by Friday.
+
+=== personal/name-only-in-list
+Attendees: «people:Chiara Bianchi», «people:Mateusz Wiśniewski», «people:Aoife Byrne», «people:Kwame Mensah»
+
+=== personal/email-unicode-domain
+Her new address is «emails:jürgen.weiß@müller-bau.de», can you update the mailing list CSV?
+
+=== personal/obfuscated-email
+contact me at «emails:sarah dot kim at protonmail dot com» if the link breaks
+
+=== personal/phone-in-json
+{"name": "«people:Luis Ortega»", "phone": "«phones:+34 612 345 678»", "email": "«emails:luis.ortega@correo.es»", "city": "«locations:Valencia»"}
+
+=== personal/csv-customer-export
+Find duplicate customers in this CSV:
+id,name,email,phone
+1041,«people:Hannah Schmidt»,«emails:hannah.schmidt@web.de»,«phones:+49 151 23456789»
+1042,«people:Hannah Schmidt»,«emails:h.schmidt@gmx.de»,«phones:+49 151 23456789»
+1043,«people:Oscar Lindqvist»,«emails:oscar.l@telia.se»,«phones:+46 70 123 45 67»
+
+=== personal/travel-itinerary
+Make a packing list for my trip. Flight LH 1417 on 14 March, booking reference «credentials:K7XQ2M», passport «governmentIds:C01X00T47». I'm staying at «addresses:Calle de Alcalá 42», «addresses:28014 Madrid».
+
+=== personal/tenant-letter
+Draft a letter to my landlord Mr. «people:Gerald Fitch» about the broken heating at «addresses:88 Birchwood Lane, Apt 4C», «addresses:Portland, OR 97205».
+
+=== personal/signature-regards
+Thanks for your patience with this.
+
+Kind regards,
+«people:Ingrid Solberg»
+
+=== personal/phone-with-dots
+Call the clinic at «phones:415.555.0133» to reschedule.
+
+=== personal/meeting-notes-names
+Meeting notes 12 Feb
+- «people:Fatima Al-Sayed» will own the vendor review
+- «people:Björn Eriksson» to send the draft contract to «people:Mei Tanaka»
+- next sync Thursday
