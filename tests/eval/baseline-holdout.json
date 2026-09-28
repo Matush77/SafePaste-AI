@@ -1,10 +1,10 @@
 {
   "overall": {
     "recall": 0.7379,
-    "precision": 0.8721,
-    "f1": 0.7994,
+    "precision": 0.8621,
+    "f1": 0.7952,
     "leakedCharRate": 0.159,
-    "benignUnchanged": 0.7941
+    "benignUnchanged": 0.7647
   },
   "recallByCategory": {
     "addresses": 1,
@@ -30,13 +30,13 @@
     "network": 1,
     "organizations": 1,
     "people": 0.7429,
-    "phones": 1
+    "phones": 0.8571
   },
   "counts": {
     "samples": 72,
     "labelled": 38,
     "benign": 34,
     "goldSpans": 103,
-    "predictions": 86
+    "predictions": 87
   }
 }

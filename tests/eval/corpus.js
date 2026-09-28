@@ -9,7 +9,10 @@ import { DEFAULT_SETTINGS } from "../../src/redactor.js";
 /**
  * @typedef {import("../../src/redactor.js").Category} Category
  * @typedef {{ start: number, end: number, category: Category, value: string }} GoldSpan
- * @typedef {{ id: string, file: string, benign: boolean, text: string, gold: GoldSpan[] }} Sample
+ * @typedef {{ id: string, file: string, benign: boolean, text: string, gold: GoldSpan[], neutral?: { start: number, end: number }[] }} Sample
+ *   `neutral`: labelled in an external dataset but outside what the extension
+ *   aims to redact (dates, job titles...). Redacting them is neither rewarded
+ *   nor counted as a false positive.
  */
 
 export const CORPUS_DIR = fileURLToPath(new URL("./corpus/", import.meta.url));

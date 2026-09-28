@@ -19,6 +19,7 @@
     "eval": "node tests/eval/run.js",
     "eval:update-baseline": "node tests/eval/run.js --update-baseline",
     "eval:ner": "node tests/eval/ner-eval.js",
+    "eval:external": "node tests/eval/external/run.js",
     "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e",
     "test:live": "node tests/live/live-playwright-qa.js",
     "qa:live:open": "node tests/live/open-live-qa-browser.js"
@@ -36,5 +37,8 @@
     "playwright": "^1.63.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
+  },
+  "dependencies": {
+    "libphonenumber-js": "^1.13.14"
   }
 }

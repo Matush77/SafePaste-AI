@@ -95,15 +95,27 @@ export function scoreCorpus(samples, settings, detector = detect) {
       }
     }
 
+    const inNeutral = new Uint8Array(sample.text.length);
+    for (const span of sample.neutral || []) {
+      inNeutral.fill(1, span.start, span.end);
+    }
+
     for (const match of predicted) {
+      let hitsGold = false;
+      let hitsNeutral = false;
+      for (let i = match.start; i < match.end && !hitsGold; i += 1) {
+        const meaningful = MEANINGFUL.test(sample.text[i]);
+        hitsGold = inGold[i] === 1 && meaningful;
+        hitsNeutral ||= inNeutral[i] === 1 && meaningful;
+      }
+      // Redacting something labelled as out of scope is neither right nor wrong.
+      if (!hitsGold && hitsNeutral) {
+        continue;
+      }
+
       const stats = (precisionByCategory[match.category] ||= { total: 0, falsePositives: 0, precision: 0 });
       stats.total += 1;
       predictions += 1;
-
-      let hitsGold = false;
-      for (let i = match.start; i < match.end && !hitsGold; i += 1) {
-        hitsGold = inGold[i] === 1 && MEANINGFUL.test(sample.text[i]);
-      }
       if (hitsGold) {
         truePredictions += 1;
       } else {
