@@ -7,12 +7,18 @@
 
 import { env, pipeline } from "@huggingface/transformers";
 import { nerCandidates } from "../ner/ner.js";
-import { MESSAGES, NAME_MODEL_DTYPE, NAME_MODEL_ID, NAME_MODEL_MIN_SCORE, OFFSCREEN_TARGET } from "../shared/nameModel.js";
+import { createVerifiedFetch } from "../ner/verifiedFetch.js";
+import { MESSAGES, NAME_MODEL_DTYPE, NAME_MODEL_ID, NAME_MODEL_MIN_SCORE, NAME_MODEL_REVISION, OFFSCREEN_TARGET } from "../shared/nameModel.js";
 
 /** @typedef {import("../shared/nameModel.js").NameModelStatus} NameModelStatus */
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
+// Only the pinned model files, verified by hash, can be downloaded. The
+// revision is also written into the URL template because transformers.js
+// 4.3 ignores the `revision` option for some files (config.json).
+env.remotePathTemplate = `{model}/resolve/${NAME_MODEL_REVISION}/`;
+env.fetch = createVerifiedFetch();
 // The runtime's WebAssembly ships inside the extension; nothing executable
 // is fetched from the network. Extension pages are not cross-origin
 // isolated, so the runtime runs single-threaded.
@@ -74,6 +80,7 @@ async function createClassifier() {
   setStatus({ state: "loading" });
 
   const classifier = await pipeline("token-classification", NAME_MODEL_ID, {
+    revision: NAME_MODEL_REVISION,
     dtype: /** @type {any} */ (NAME_MODEL_DTYPE),
     device: "wasm",
     progress_callback: (/** @type {any} */ event) => {

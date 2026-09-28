@@ -27,7 +27,7 @@ Detection combines known token formats, checksums (Luhn, IBAN, SSN, NHS and birt
 
 ### Optional name model
 
-**Enhanced name detection** in the popup adds an English named-entity model ([distilbert-NER](https://huggingface.co/onnx-community/distilbert-NER-ONNX), 8-bit, about 66 MB) that finds names the rules miss, such as "Kowalski approved the budget". It is off by default. Turning it on downloads the model once from Hugging Face; after that it runs on the device in an offscreen document, using the ONNX WebAssembly runtime shipped in the package.
+**Enhanced name detection** in the popup adds an English named-entity model ([distilbert-NER](https://huggingface.co/onnx-community/distilbert-NER-ONNX), 8-bit, about 66 MB) that finds names the rules miss, such as "Kowalski approved the budget". It is off by default. Turning it on downloads the model once from Hugging Face, pinned to one revision, and every file is checked against its known SHA-256 before use (`src/ner/verifiedFetch.js`); after that it runs on the device in an offscreen document, using the ONNX WebAssembly runtime shipped in the package.
 
 With the model on, every paste into a prompt is held briefly while the model checks it. If the model does not answer in time (3 seconds plus a little per character), the paste is redacted with the rules alone and a notice says so. Pastes over 30,000 characters always use the rules alone.
 
@@ -80,7 +80,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `npm run test:e2e` | Real-browser test of the built extension. Run `npm run build` first. |
 | `npm run eval` | Print redaction quality: recall, precision, and false positives per category. Add `-- --verbose` to list every miss and false positive. |
 | `npm run eval:update-baseline` | Accept the current quality scores as the new baseline. |
-| `npm run eval:ner` | Compare rules alone with rules + the name model (downloads the model on first run; the end-to-end test then serves it from that cache). |
+| `npm run eval:ner` | Compare rules alone with rules + the name model (downloads the model on first run). |
 | `npm run eval:external` | Score on public PII datasets (Nemotron-PII, Gretel). Downloads them to `.cache/` on first run. `-- --verbose` lists misses on the development set; `-- --test` prints totals for the untouched test set. |
 | `npm run check` | Everything above, as CI runs it. |
 | `npm run build:zip` | Build and write `dist/safepaste-ai-<version>.zip` for the Chrome Web Store. |

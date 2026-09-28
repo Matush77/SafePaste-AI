@@ -133,6 +133,8 @@ function validatePackage(manifest) {
     manifest.background && manifest.background.service_worker,
     "offscreen.html",
     "offscreen.js",
+    // Licence notices for bundled third-party code must ship with it.
+    "THIRD_PARTY_NOTICES.md",
     ...ONNX_RUNTIME_FILES.map((file) => `ort/${file}`),
     manifest.action && manifest.action.default_popup,
     manifest.options_page,
@@ -145,7 +147,7 @@ function validatePackage(manifest) {
   }
 
   for (const file of Object.keys(collectFiles(outDir))) {
-    if (/^(tests|node_modules)\//.test(file) || /\.(map|md)$/.test(file)) {
+    if (/^(tests|node_modules)\//.test(file) || (/\.(map|md)$/.test(file) && file !== "THIRD_PARTY_NOTICES.md")) {
       problems.push(`file must not be packaged: ${file}`);
     }
   }

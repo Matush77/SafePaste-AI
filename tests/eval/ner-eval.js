@@ -3,13 +3,11 @@
 // first use.
 //
 //   npm run eval:ner -- [--model onnx-community/distilbert-NER-ONNX] [--dtype q8] [--min-score 0.85] [--verbose]
-//
-// Also fills the local model cache that the end-to-end test serves the
-// model from.
 
 import { pipeline } from "@huggingface/transformers";
 import { detect } from "../../src/redactor.js";
 import { nerCandidates } from "../../src/ner/ner.js";
+import { NAME_MODEL_ID, NAME_MODEL_REVISION } from "../../src/shared/nameModel.js";
 import { CORPUS_DIR, HOLDOUT_DIR, loadCorpus } from "./corpus.js";
 import { scoreCorpus } from "./score.js";
 
@@ -18,12 +16,14 @@ const option = (/** @type {string} */ name, /** @type {string} */ fallback) => {
   const index = args.indexOf(name);
   return index === -1 ? fallback : args[index + 1];
 };
-const modelId = option("--model", "onnx-community/distilbert-NER-ONNX");
+const modelId = option("--model", NAME_MODEL_ID);
 const dtype = option("--dtype", "q8");
 const minScore = Number(option("--min-score", "0.85"));
 const verbose = args.includes("--verbose");
 
-const classifier = await pipeline("token-classification", modelId, { dtype: /** @type {any} */ (dtype) });
+// The shipped model is scored at the revision the extension pins.
+const revision = modelId === NAME_MODEL_ID ? NAME_MODEL_REVISION : "main";
+const classifier = await pipeline("token-classification", modelId, { revision, dtype: /** @type {any} */ (dtype) });
 /** @param {string} text */
 const classify = async (text) => /** @type {any} */ (await classifier(text, { ignore_labels: [] }));
 

@@ -14,7 +14,6 @@ import { chromium } from "playwright";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const extensionPath = join(root, "dist", "safepaste-ai");
-const MODEL_CACHE = join(root, "node_modules", "@huggingface", "transformers", ".cache");
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 const UNDO = process.platform === "darwin" ? "Meta+Z" : "Control+Z";
 
@@ -174,16 +173,10 @@ async function main() {
     for (const [url, html] of Object.entries(FIXTURES)) {
       await context.route(`${url}**`, (route) => route.fulfill({ contentType: "text/html", body: html }));
     }
-    // Serve the name model from the transformers.js cache filled by
-    // `npm run eval:ner`, so the test does not download 66 MB each run.
-    await context.route("https://huggingface.co/**", (route) => {
-      const match = /\/([^/]+\/[^/]+)\/resolve\/[^/]+\/(.+)$/.exec(new URL(route.request().url()).pathname);
-      const cached = match && join(MODEL_CACHE, match[1], match[2]);
-      if (cached && existsSync(cached)) {
-        return route.fulfill({ path: cached, headers: { "access-control-allow-origin": "*" } });
-      }
-      return route.continue();
-    });
+    // The name model check downloads the pinned model (66 MB) from Hugging
+    // Face: Playwright cannot intercept requests made by the extension's
+    // offscreen document, so it cannot be served locally. This also tests
+    // the real download and its hash verification.
     extensionId = await findExtensionId();
 
     const page = await context.newPage();
