@@ -4,6 +4,7 @@ import { detectAddresses } from "./addresses.js";
 import { detectContact } from "./contact.js";
 import { detectEntities } from "./entities.js";
 import { detectFinancial } from "./financial.js";
+import { detectGitleaks } from "./gitleaks.js";
 import { detectGovernmentIds } from "./governmentIds.js";
 import { detectNetwork } from "./network.js";
 import { detectSecrets } from "./secrets.js";
@@ -15,7 +16,7 @@ import { detectStructured } from "./structured.js";
  * @typedef {import("../redactor.js").Match} Match
  */
 
-const DETECTORS = [detectSecrets, detectContact, detectFinancial, detectGovernmentIds, detectNetwork, detectAddresses, detectStructured, detectEntities];
+const DETECTORS = [detectSecrets, detectGitleaks, detectContact, detectFinancial, detectGovernmentIds, detectNetwork, detectAddresses, detectStructured, detectEntities];
 
 const CONFIDENCE_RANK = { low: 0, medium: 1, high: 2 };
 const MINIMUM_RANK = { balanced: 1, strict: 0 };

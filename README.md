@@ -51,7 +51,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | Path | Contents |
 |---|---|
 | `src/redactor.js` | Public engine API: settings, `detect()`, `redact()`, placeholders. Pure functions, no browser APIs. |
-| `src/detection/` | Detection rules by area (secrets, contact details, financial, government IDs, network, addresses, structured fields, people/organisations/places) and the step that merges their results. |
+| `src/detection/` | Detection rules by area (secrets, including the [gitleaks](https://github.com/gitleaks/gitleaks) rule set; contact details, with phone numbers checked by libphonenumber; financial, government IDs, network, addresses, structured fields, people/organisations/places) and the step that merges their results. |
 | `src/siteAdapters.js` | Supported sites, prompt-editor detection, text insertion. |
 | `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour, waiting for the optional name model. |
 | `src/ner/ner.js` | Turns name-model output into detection candidates (shared by the extension and `eval:ner`). |
@@ -60,6 +60,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `src/popup/popup.js` | Settings popup. |
 | `static/` | Manifest, popup HTML/CSS, privacy page, icons. Copied into the build as-is. |
 | `scripts/build.js` | Bundles `src/` with esbuild and validates and zips the package. |
+| `scripts/update-gitleaks-rules.js` | Regenerates `src/detection/data/gitleaksRules.js` from a pinned gitleaks release, converting its Go regexes with `scripts/goRegex.js`. |
 | `tests/unit/` | Unit tests (Vitest, with jsdom for DOM code). |
 | `tests/eval/` | Labelled evaluation corpus, scorer and quality baseline. |
 | `tests/fixtures/legacy/` | Benchmarks from before the evaluation corpus, kept as leak-regression checks. |
@@ -80,6 +81,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `npm run eval` | Print redaction quality: recall, precision, and false positives per category. Add `-- --verbose` to list every miss and false positive. |
 | `npm run eval:update-baseline` | Accept the current quality scores as the new baseline. |
 | `npm run eval:ner` | Compare rules alone with rules + the name model (downloads the model on first run; the end-to-end test then serves it from that cache). |
+| `npm run eval:external` | Score on public PII datasets (Nemotron-PII, Gretel). Downloads them to `.cache/` on first run. `-- --verbose` lists misses on the development set; `-- --test` prints totals for the untouched test set. |
 | `npm run check` | Everything above, as CI runs it. |
 | `npm run build:zip` | Build and write `dist/safepaste-ai-<version>.zip` for the Chrome Web Store. |
 
@@ -95,7 +97,9 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 
 `tests/eval/holdout/` is a second labelled set that detection rules are never tuned against. `npm run eval -- --holdout` scores it, which shows whether an improvement generalises or only fits the main corpus.
 
-`tests/eval/baseline.json` and `baseline-holdout.json` store the accepted scores, and `npm test` fails if any of them gets worse. `tests/unit/performance.test.js` also fails if any input makes detection slow, because detection runs inside the paste handler. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
+Both sets were written in-house. `npm run eval:external` is an independent check on text written by others: nvidia/Nemotron-PII (CC BY 4.0) and gretelai/gretel-pii-masking-en-v1 (Apache-2.0). Rows 0-499 of each are the development set; rows 1000-1499 are a test set that rules are never tuned against. Labels outside what SafePaste aims to redact (dates, job titles) are scored as neutral. Recall there is much lower than on the in-house corpus (about 57% on the test sets), mostly because of missed names, organisations, ID and account numbers, and addresses.
+
+`tests/eval/baseline.json` and `baseline-holdout.json` store the accepted scores, and `npm test` fails if any of them gets worse. `tests/unit/performance.test.js` also fails if any input makes detection slow, because detection runs inside the paste handler; it runs every gitleaks rule on adversarial input built around its keywords. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
 
 ## Release
 
