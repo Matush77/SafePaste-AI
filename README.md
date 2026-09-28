@@ -6,7 +6,7 @@ Chrome MV3 extension that redacts sensitive data locally when you paste or drop 
 - `https://gemini.google.com/app`
 - `https://claude.ai/`
 
-Detection runs entirely in the browser. The extension makes no network requests and does not store original sensitive values or prompt text.
+Detection runs entirely in the browser. Pasted text is never sent anywhere, and original sensitive values and prompt text are not stored. The only network request the extension can make is the one-time download of the optional name model (below), which contains no user data.
 
 SafePaste AI is independent and is not affiliated with the third-party AI chat services it supports.
 
@@ -24,6 +24,14 @@ Safety behaviour:
 - Login, email, search and other non-prompt fields are never touched.
 
 Detection combines known token formats, checksums (Luhn, IBAN, SSN, NHS and birth numbers), key names in config files and JSON, field names in tables, and context words. Every match has a confidence, and the popup's **Sensitivity** setting chooses what is redacted: **Balanced** (default) redacts confident matches; **Strict** also redacts likely ones, such as random-looking strings with no key name nearby. Place and institution names count as personal data only when other personal data is nearby, so "a trip from New York to Paris" is left alone.
+
+### Optional name model
+
+**Enhanced name detection** in the popup adds an English named-entity model ([distilbert-NER](https://huggingface.co/onnx-community/distilbert-NER-ONNX), 8-bit, about 66 MB) that finds names the rules miss, such as "Kowalski approved the budget". It is off by default. Turning it on downloads the model once from Hugging Face; after that it runs on the device in an offscreen document, using the ONNX WebAssembly runtime shipped in the package.
+
+With the model on, every paste into a prompt is held briefly while the model checks it. If the model does not answer in time (3 seconds plus a little per character), the paste is redacted with the rules alone and a notice says so. Pastes over 30,000 characters always use the rules alone.
+
+The model was chosen with `npm run eval:ner`, which compares rules alone with rules plus a model on every evaluation set. On the held-out names set it finds 21 of 28 names versus 11 for the rules. Its main cost is also redacting public figures and fictional characters ("Satya Nadella", "Sherlock Holmes"), which a model cannot tell apart from private people.
 
 This is a heuristic safety layer, not a compliance boundary. Current quality is measured by `npm run eval`, described below.
 
@@ -45,7 +53,9 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `src/redactor.js` | Public engine API: settings, `detect()`, `redact()`, placeholders. Pure functions, no browser APIs. |
 | `src/detection/` | Detection rules by area (secrets, contact details, financial, government IDs, network, addresses, structured fields, people/organisations/places) and the step that merges their results. |
 | `src/siteAdapters.js` | Supported sites, prompt-editor detection, text insertion. |
-| `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour. |
+| `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour, waiting for the optional name model. |
+| `src/ner/ner.js` | Turns name-model output into detection candidates (shared by the extension and `eval:ner`). |
+| `src/background.js`, `src/offscreen/` | Service worker and offscreen document that run the optional name model. |
 | `src/contentScript.js` | Content-script entry point. |
 | `src/popup/popup.js` | Settings popup. |
 | `static/` | Manifest, popup HTML/CSS, privacy page, icons. Copied into the build as-is. |
@@ -69,6 +79,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `npm run test:e2e` | Real-browser test of the built extension. Run `npm run build` first. |
 | `npm run eval` | Print redaction quality: recall, precision, and false positives per category. Add `-- --verbose` to list every miss and false positive. |
 | `npm run eval:update-baseline` | Accept the current quality scores as the new baseline. |
+| `npm run eval:ner` | Compare rules alone with rules + the name model (downloads the model on first run; the end-to-end test then serves it from that cache). |
 | `npm run check` | Everything above, as CI runs it. |
 | `npm run build:zip` | Build and write `dist/safepaste-ai-<version>.zip` for the Chrome Web Store. |
 

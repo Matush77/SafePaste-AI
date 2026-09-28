@@ -24,6 +24,10 @@ SafePaste AI is independent and is not affiliated with the third-party AI chat s
 
 Host access for the supported AI chat websites: Required so the content script can intercept paste and drop events and insert redacted text inside those prompt editors.
 
+`offscreen`: Used only when the user turns on the optional "Enhanced name detection". Runs the on-device name-detection model in an offscreen document, because the WebAssembly runtime it needs cannot run in the service worker. Pasted text is processed on the device and not transmitted.
+
+Content security policy `wasm-unsafe-eval` for extension pages: Needed to run the packaged WebAssembly runtime of the optional on-device name model. No remote code is loaded.
+
 ## Single Purpose
 
 The extension only redacts sensitive content from text pasted or dropped into supported AI chat websites.
@@ -33,4 +37,5 @@ The extension only redacts sensitive content from text pasted or dropped into su
 - Does not sell or transfer user data.
 - Does not transmit pasted text to servers.
 - Does not use remote code.
+- Optional, off by default: downloads a name-detection model (about 66 MB) from Hugging Face once when the user enables it. The download contains no user data.
 - Stores settings and redaction-count summaries locally.

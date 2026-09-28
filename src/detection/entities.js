@@ -27,14 +27,15 @@ const ANY_NAME = `${CAP_WORD}(?:${H}+(?:${PARTICLE}${H}+){0,2}${CAP_WORD}){0,3}`
 const LOWER_NAME = "[a-z][a-z'’-]+(?:[^\\S\\r\\n]+[a-z][a-z'’-]+){0,2}";
 
 // Capitalised words that start sentences or headings, never names.
-const NOT_NAME = new Set([
+export const NOT_NAME = new Set([
   "a", "an", "and", "as", "at", "by", "for", "from", "i", "if", "in", "into", "it", "its", "of", "on", "or", "our", "the",
   "this", "that", "these", "those", "to", "we", "when", "where", "with", "you", "your", "my", "his", "her", "their", "all",
   "team", "everyone", "everybody", "folks", "guys", "there", "sir", "madam", "support", "customer", "customers", "client",
   "user", "users", "friend", "friends", "hello", "hi", "hey", "dear", "thanks", "thank", "regards", "best", "please",
   "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "january", "february", "march", "april",
   "may", "june", "july", "august", "september", "october", "november", "december", "today", "tomorrow", "yesterday",
-  "new", "old", "big", "small", "north", "south", "east", "west", "not", "no", "yes", "ok", "okay", "admin", "root", "api"
+  "new", "old", "big", "small", "north", "south", "east", "west", "not", "no", "yes", "ok", "okay", "admin", "root", "api",
+  "bonjour", "hola", "ciao", "hallo", "ahoj", "dobrý", "dobry", "deň", "den", "cześć", "hej", "salut", "servus", "grüß", "gott"
 ]);
 
 const GREETING = new RegExp(`(?:^|(?<=[\\s>]))(?:Dear|Hi|Hello|Hey|Hallo|Bonjour|Hola|Ciao|Ahoj|Dobrý deň|Dobrý den|Cześć|Hej)${H}+(?:(?:Mr|Mrs|Ms|Miss|Dr|Prof)\\.?${H}+)?(${ANY_NAME})(?=${H}*[,!:\\n]|$)`, "dgmu");

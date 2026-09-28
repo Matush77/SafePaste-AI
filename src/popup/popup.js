@@ -1,4 +1,5 @@
 import { mergeSettings } from "../redactor.js";
+import { MESSAGES, NAME_MODEL_SIZE_MB } from "../shared/nameModel.js";
 import { LAST_REDACTION_KEY, SETTINGS_KEY } from "../shared/storageKeys.js";
 
 /** @type {Record<import("../redactor.js").Category, string>} */
@@ -22,6 +23,8 @@ const categories = /** @type {HTMLElement} */ (document.getElementById("categori
 const placeholderStyle = /** @type {HTMLSelectElement} */ (document.getElementById("placeholderStyle"));
 const sensitivity = /** @type {HTMLSelectElement} */ (document.getElementById("sensitivity"));
 const showToast = /** @type {HTMLInputElement} */ (document.getElementById("showToast"));
+const nameModel = /** @type {HTMLInputElement} */ (document.getElementById("nameModel"));
+const nameModelStatus = /** @type {HTMLElement} */ (document.getElementById("nameModelStatus"));
 const lastRedaction = /** @type {HTMLElement} */ (document.getElementById("lastRedaction"));
 
 let settings = mergeSettings();
@@ -43,6 +46,49 @@ function init() {
   placeholderStyle.addEventListener("change", () => updateSettings({ placeholderStyle: /** @type {"typed" | "compact"} */ (placeholderStyle.value) }));
   sensitivity.addEventListener("change", () => updateSettings({ sensitivity: /** @type {"balanced" | "strict"} */ (sensitivity.value) }));
   showToast.addEventListener("change", () => updateSettings({ showToast: showToast.checked }));
+  nameModel.addEventListener("change", () => {
+    updateSettings({ nameModel: nameModel.checked });
+    if (nameModel.checked) {
+      requestModel(MESSAGES.prepare);
+    } else {
+      renderModelStatus(null);
+    }
+  });
+
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message && message.type === MESSAGES.progress && settings.nameModel) {
+      renderModelStatus(message.status);
+    }
+  });
+  requestModel(MESSAGES.status);
+}
+
+/** @param {string} type */
+function requestModel(type) {
+  chrome.runtime.sendMessage({ type })
+    .then((response) => {
+      if (settings.nameModel || type === MESSAGES.prepare) {
+        renderModelStatus(response && response.status ? response.status : { state: "error", error: response && response.error });
+      }
+    })
+    .catch((error) => renderModelStatus({ state: "error", error: String(error) }));
+}
+
+/** @param {import("../shared/nameModel.js").NameModelStatus | null} status */
+function renderModelStatus(status) {
+  if (!status || !nameModel.checked) {
+    nameModelStatus.textContent = "";
+    return;
+  }
+  const text = {
+    absent: `Not downloaded yet (about ${NAME_MODEL_SIZE_MB} MB).`,
+    downloaded: "Downloaded. Loads when you next paste on a supported site.",
+    downloading: `Downloading the model… ${status.progress ?? 0}%`,
+    loading: "Loading the model…",
+    ready: "Ready. Names are checked on this device.",
+    error: `The model could not be loaded: ${status.error || "unknown error"}. Pastes are still redacted with the built-in rules.`
+  }[status.state];
+  nameModelStatus.textContent = text;
 }
 
 function renderCategoryControls() {
@@ -76,6 +122,7 @@ function renderSettings() {
   placeholderStyle.value = settings.placeholderStyle;
   sensitivity.value = settings.sensitivity;
   showToast.checked = settings.showToast;
+  nameModel.checked = settings.nameModel;
 
   for (const input of categories.querySelectorAll("input[data-category]")) {
     const checkbox = /** @type {HTMLInputElement} */ (input);

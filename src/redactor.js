@@ -13,6 +13,7 @@ import { detectAll } from "./detection/index.js";
  * @property {boolean} showToast
  * @property {"typed"|"compact"} placeholderStyle
  * @property {"balanced"|"strict"} sensitivity  "strict" also redacts low-confidence matches.
+ * @property {boolean} nameModel  Also run the optional local name-detection model.
  * @property {Record<Category, boolean>} categories
  *
  * @typedef {object} Match
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   showToast: true,
   placeholderStyle: "typed",
   sensitivity: "balanced",
+  nameModel: false,
   categories: {
     apiKeys: true,
     credentials: true,
@@ -93,6 +95,7 @@ export function mergeSettings(settings) {
     showToast: typeof input.showToast === "boolean" ? input.showToast : DEFAULT_SETTINGS.showToast,
     placeholderStyle: input.placeholderStyle === "compact" ? "compact" : "typed",
     sensitivity: input.sensitivity === "strict" ? "strict" : "balanced",
+    nameModel: input.nameModel === true,
     categories: /** @type {Record<Category, boolean>} */ (categories)
   };
 }

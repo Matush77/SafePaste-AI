@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { htmlToText, installPasteGuard } from "../../src/pasteGuard.js";
 import { LAST_REDACTION_KEY, SETTINGS_KEY } from "../../src/shared/storageKeys.js";
 
@@ -298,6 +298,118 @@ describe("drag and drop", () => {
 
     expect(event.defaultPrevented).toBe(false);
     expect(prompt.value).toBe("");
+  });
+});
+
+describe("with the name model", () => {
+  const NAMES = "Kowalski approved it, but Adaeze Okonkwo must sign.";
+
+  /**
+   * @param {(text: string) => Promise<any[]>} detect
+   * @param {object} [stored]
+   */
+  function setupWithModel(detect, stored = { nameModel: true }) {
+    const notices = /** @type {string[]} */ ([]);
+    const storage = {
+      sync: { get: () => Promise.resolve({ [SETTINGS_KEY]: stored }), set: () => Promise.resolve() },
+      local: { get: () => Promise.resolve({}), set: () => Promise.resolve() },
+      onChanged: { addListener() {} }
+    };
+    const guard = installPasteGuard({ site, storage, notify: (message) => notices.push(message), nameModel: { detect } });
+    cleanups.push(guard.dispose);
+    return { guard, notices };
+  }
+
+  /** @param {string} text @param {string} name */
+  const nameSpan = (text, name) => [{ start: text.indexOf(name), end: text.indexOf(name) + name.length, type: "PERSON", category: "people", confidence: "high", source: "model" }];
+
+  it("holds the paste and redacts the names the model finds", async () => {
+    const { guard } = setupWithModel(async (text) => nameSpan(text, "Adaeze Okonkwo"));
+    await guard.ready;
+    const prompt = promptTextarea();
+
+    const event = paste(prompt, { "text/plain": NAMES });
+    expect(event.defaultPrevented).toBe(true);
+    await guard.whenIdle();
+
+    expect(prompt.value).toBe("Kowalski approved it, but [[PERSON_1]] must sign.");
+  });
+
+  it("inserts harmless text unchanged after the model finds nothing", async () => {
+    const { guard, notices } = setupWithModel(async () => []);
+    await guard.ready;
+    const prompt = promptTextarea();
+
+    paste(prompt, { "text/plain": "Explain useEffect cleanup." });
+    await guard.whenIdle();
+
+    expect(prompt.value).toBe("Explain useEffect cleanup.");
+    expect(notices).toEqual([]);
+  });
+
+  it("falls back to the rules and says so when the model fails", async () => {
+    const { guard, notices } = setupWithModel(async () => {
+      throw new Error("not downloaded");
+    });
+    await guard.ready;
+    const prompt = promptTextarea();
+
+    paste(prompt, { "text/plain": `${NAMES} Mail a@example.com.` });
+    await guard.whenIdle();
+
+    expect(prompt.value).toContain("Adaeze Okonkwo");
+    expect(prompt.value).toContain("[[EMAIL_1]]");
+    expect(notices.at(-1)).toMatch(/name model did not respond/);
+  });
+
+  it("falls back to the rules when the model is too slow", async () => {
+    vi.useFakeTimers();
+    try {
+      const { guard, notices } = setupWithModel(() => new Promise(() => {}));
+      await guard.ready;
+      const prompt = promptTextarea();
+
+      paste(prompt, { "text/plain": "Mail a@example.com" });
+      await vi.advanceTimersByTimeAsync(20000);
+      await guard.whenIdle();
+
+      expect(prompt.value).toBe("Mail [[EMAIL_1]]");
+      expect(notices.at(-1)).toMatch(/name model did not respond/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps several pastes in order while waiting", async () => {
+    /** @type {((value: any[]) => void)[]} */
+    const resolvers = [];
+    const { guard } = setupWithModel(() => new Promise((resolve) => resolvers.push(resolve)));
+    await guard.ready;
+    const prompt = promptTextarea();
+
+    paste(prompt, { "text/plain": "first " });
+    paste(prompt, { "text/plain": "second" });
+    await Promise.resolve();
+    resolvers[0]([]);
+    await vi.waitFor(() => expect(resolvers).toHaveLength(2));
+    resolvers[1]([]);
+    await guard.whenIdle();
+
+    expect(prompt.value).toBe("first second");
+  });
+
+  it("does not hold pastes when the setting is off", async () => {
+    let calls = 0;
+    const { guard } = setupWithModel(async () => {
+      calls += 1;
+      return [];
+    }, { nameModel: false });
+    await guard.ready;
+
+    const event = paste(promptTextarea(), { "text/plain": NAMES });
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(calls).toBe(0);
   });
 });
 

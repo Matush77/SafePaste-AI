@@ -35,6 +35,16 @@
       </section>
 
       <section>
+        <h2>Name detection</h2>
+        <label class="select-row">
+          <span>Enhanced name detection</span>
+          <input id="nameModel" type="checkbox" aria-describedby="nameModelHint nameModelStatus">
+        </label>
+        <p id="nameModelHint" class="hint">Finds names the built-in rules miss, using an AI model that runs on this device. Turning it on downloads the model once (about 66 MB, from Hugging Face). Pasted text never leaves your browser.</p>
+        <p id="nameModelStatus" class="hint" role="status" aria-live="polite"></p>
+      </section>
+
+      <section>
         <h2>Detect</h2>
         <div id="categories" class="toggles"></div>
       </section>

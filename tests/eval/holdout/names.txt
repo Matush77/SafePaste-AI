@@ -1,0 +1,43 @@
+=== names/plain-sentence-names
+«people:Kowalski» approved the budget, but «people:Adaeze Okonkwo» still needs to sign off before «people:Lars Pettersen» can order the servers.
+
+=== names/lowercase-names
+can you remind «people:liam» and «people:sofia rossi» that the retro moved to friday
+
+=== names/names-with-roles
+The incident was caught by «people:Rafael Moreira» on the night shift; «people:Yuki Tanabe» wrote the postmortem and «people:Ibrahim Diallo» reviewed it.
+
+=== names/family-message
+Help me write a birthday card for grandma «people:Halina», from all of us: «people:Marek», «people:Zofia» and little «people:Kuba».
+
+=== names/tenant-dispute
+Our neighbour «people:Gerhard Baumann» keeps parking in front of our garage. How should I word a polite note?
+
+=== names/customer-list-no-header
+«people:Thandiwe Nkosi» - premium, renews in May
+«people:Oskar Lindgren» - basic, overdue
+«people:Farhan Qureshi» - premium, cancelled
+
+=== names/medical-no-labels
+«people:Beatriz Almeida», 64, presented with chest pain. Her daughter «people:Inês» brought her in from «locations:Braga».
+
+=== names/company-no-suffix
+We're losing «organizations:Brightwell Dental» and «organizations:Quarry Lane Veterinary» as clients to a cheaper competitor. Draft a retention offer.
+
+=== names/employer-mention
+«people:Nkechi» has worked at «organizations:Halvorsen Marine» for six years and is moving to our «locations:Bergen» team.
+
+=== names/slovak-email
+Ahoj «people:Zuzka», posielam ti zmluvu od «people:Petra Hudáka». Ozvi sa prosím do piatku.
+
+=== names/german-note
+Bitte leite das an Frau «people:Kessler» weiter und sag «people:Jonas Brenner», dass der Termin verschoben wurde.
+
+=== names/chat-mentions
+@«people:dmitri.volkov» can you check the logs? «people:Ana Ferreira» said the deploy failed at 14:02.
+
+=== names/reference-letter
+I have supervised «people:Chukwuemeka Obi» for three years at «organizations:Northfield Analytics», where he led the pricing team.
+
+=== names/two-first-names
+«people:Mia» and «people:Noah» will cover the Saturday shift.

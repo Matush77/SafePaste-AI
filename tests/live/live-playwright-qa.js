@@ -176,6 +176,7 @@ async function main() {
   /** @type {{ site: string, check: string, status: string, detail: string }[]} */
   const results = [];
   try {
+    await serveModelFromCache(context);
     const extensionId = await findExtensionId(context);
     for (const site of selectedSites()) {
       const page = await context.newPage();
@@ -190,6 +191,25 @@ async function main() {
         for (const check of CHECKS) {
           results.push(await runCheck(site.name, check, { page, editor }));
         }
+        results.push(await runCheck(site.name, {
+          name: "Name model: names without cues are redacted (delayed insert)",
+          async run(ctx) {
+            await setNameModel(context, extensionId, true);
+            try {
+              await ctx.page.bringToFront();
+              await ctx.page.waitForTimeout(1500);
+              const text = await pasteAndRead(ctx.page, ctx.editor, "Kowalski approved the budget, but Adaeze Okonkwo still needs to sign off.");
+              await ctx.page.waitForTimeout(2000);
+              const final = await readEditor(ctx.editor);
+              assertNoLeak(final, ["Adaeze Okonkwo"]);
+              assert.ok(final.includes("approved the budget"), `text lost: ${JSON.stringify(final || text)}`);
+              assert.equal((final.match(/approved the budget/g) || []).length, 1, `inserted twice: ${JSON.stringify(final)}`);
+            } finally {
+              await setNameModel(context, extensionId, false);
+              await ctx.page.bringToFront();
+            }
+          }
+        }, { page, editor }));
         results.push(await runCheck(site.name, {
           name: "Turning the extension off in the popup stops redaction",
           async run(ctx) {
@@ -382,6 +402,41 @@ async function setEnabled(context, extensionId, enabled) {
   }
   await popup.waitForTimeout(300);
   await popup.close();
+}
+
+/**
+ * Turns the optional name model on or off in the popup and, when turning it
+ * on, waits until it is loaded.
+ * @param {import("playwright").BrowserContext} context
+ * @param {string} extensionId
+ * @param {boolean} on
+ */
+async function setNameModel(context, extensionId, on) {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const toggle = popup.locator("#nameModel");
+  await toggle.waitFor();
+  await toggle.setChecked(on);
+  if (on) {
+    await popup.locator("#nameModelStatus", { hasText: "Ready" }).waitFor({ timeout: 300000 });
+  }
+  await popup.close();
+}
+
+// Serve the name model from the local transformers.js cache (filled by
+// `npm run eval:ner`) instead of downloading 66 MB from Hugging Face.
+const MODEL_CACHE = path.join(root, "node_modules", "@huggingface", "transformers", ".cache");
+
+/** @param {import("playwright").BrowserContext} context */
+async function serveModelFromCache(context) {
+  await context.route("https://huggingface.co/**", (route) => {
+    const match = /\/([^/]+\/[^/]+)\/resolve\/[^/]+\/(.+)$/.exec(new URL(route.request().url()).pathname);
+    const cached = match && path.join(MODEL_CACHE, match[1], match[2]);
+    if (cached && fs.existsSync(cached)) {
+      return route.fulfill({ path: cached, headers: { "access-control-allow-origin": "*" } });
+    }
+    return route.continue();
+  });
 }
 
 function validatePackageInputs() {

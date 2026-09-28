@@ -14,6 +14,7 @@ import { chromium } from "playwright";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const extensionPath = join(root, "dist", "safepaste-ai");
+const MODEL_CACHE = join(root, "node_modules", "@huggingface", "transformers", ".cache");
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 const UNDO = process.platform === "darwin" ? "Meta+Z" : "Control+Z";
 
@@ -113,6 +114,31 @@ const CASES = [
     }
   },
   {
+    name: "Name model: finds names the rules miss, running on-device",
+    async run(page) {
+      const sample = "Kowalski approved the budget, but Adaeze Okonkwo still needs to sign off.";
+      await open(page, "https://chatgpt.com/");
+      await pasteInto(page, "#prompt-textarea", { "text/plain": sample });
+      assert.equal(await valueOf(page, "#prompt-textarea"), sample, "rules alone should not catch these names");
+
+      await page.goto(`chrome-extension://${extensionId}/popup.html`);
+      await page.locator("#nameModel").check();
+      await page.locator("#nameModelStatus", { hasText: "Ready" }).waitFor({ timeout: 180000 });
+
+      try {
+        await open(page, "https://chatgpt.com/");
+        await pasteInto(page, "#prompt-textarea", { "text/plain": sample });
+        await page.waitForFunction(() => /** @type {HTMLTextAreaElement} */ (document.querySelector("#prompt-textarea")).value !== "", null, { timeout: 20000 });
+        const value = await valueOf(page, "#prompt-textarea");
+        assert.ok(!value.includes("Adaeze Okonkwo"), `model should redact the name: ${value}`);
+        assert.ok(value.includes("approved the budget"), `surrounding text should stay: ${value}`);
+      } finally {
+        await page.goto(`chrome-extension://${extensionId}/popup.html`);
+        await page.locator("#nameModel").uncheck();
+      }
+    }
+  },
+  {
     name: "Popup setting off: paste goes through unchanged",
     async run(page) {
       await setEnabled(page, false);
@@ -148,6 +174,16 @@ async function main() {
     for (const [url, html] of Object.entries(FIXTURES)) {
       await context.route(`${url}**`, (route) => route.fulfill({ contentType: "text/html", body: html }));
     }
+    // Serve the name model from the transformers.js cache filled by
+    // `npm run eval:ner`, so the test does not download 66 MB each run.
+    await context.route("https://huggingface.co/**", (route) => {
+      const match = /\/([^/]+\/[^/]+)\/resolve\/[^/]+\/(.+)$/.exec(new URL(route.request().url()).pathname);
+      const cached = match && join(MODEL_CACHE, match[1], match[2]);
+      if (cached && existsSync(cached)) {
+        return route.fulfill({ path: cached, headers: { "access-control-allow-origin": "*" } });
+      }
+      return route.continue();
+    });
     extensionId = await findExtensionId();
 
     const page = await context.newPage();

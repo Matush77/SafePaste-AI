@@ -21,7 +21,17 @@ import { LAST_REDACTION_KEY, SETTINGS_KEY } from "./shared/storageKeys.js";
  * @property {{ addListener: (listener: (changes: Record<string, { newValue?: any }>, areaName: string) => void) => void }} onChanged
  *
  * @typedef {(message: string) => void} Notify
+ *
+ * @typedef {import("./detection/util.js").Candidate} Candidate
+ * @typedef {{ detect: (text: string) => Promise<Candidate[]> }} NameModel
  */
+
+// Longer pastes use the rules only; the model would keep the user waiting.
+const NAME_MODEL_MAX_CHARS = 30000;
+// How long a paste may wait for the model before falling back to the rules.
+const NAME_MODEL_BASE_WAIT_MS = 3000;
+const NAME_MODEL_WAIT_MS_PER_CHAR = 0.4;
+const NAME_MODEL_MAX_WAIT_MS = 15000;
 
 // Attributes that can carry a sensitive value that is not part of the
 // visible text, e.g. <a href="https://example.com/reset?token=...">Reset</a>.
@@ -39,9 +49,12 @@ const BLOCK_TAGS = new Set([
  * @param {Window} [options.win]
  * @param {Document} [options.doc]
  * @param {Notify} [options.notify]
+ * @param {NameModel} [options.nameModel] The optional local name-detection model.
  */
-export function installPasteGuard({ site, storage, win = window, doc = document, notify }) {
+export function installPasteGuard({ site, storage, win = window, doc = document, notify, nameModel }) {
   const show = notify || ((message) => showToast(doc, message));
+  /** @type {Promise<void>} */
+  let pending = Promise.resolve();
 
   // Start from the defaults (redaction on) rather than "disabled until settings
   // load": a paste during page load, or a storage failure, must not leak.
@@ -110,9 +123,12 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
       return;
     }
 
-    const result = redact(source, settings);
-    const hiddenFindings = html && !result.changed ? findHiddenSensitiveValues(html, settings) : [];
-    if (!result.changed && hiddenFindings.length === 0) {
+    const rules = redact(source, settings);
+    const hiddenFindings = html && !rules.changed ? findHiddenSensitiveValues(html, settings) : [];
+    const useModel = Boolean(settings.nameModel && nameModel && source.length <= NAME_MODEL_MAX_CHARS);
+    // Without the model, a paste with nothing to redact goes through untouched.
+    // With it, the answer is not known yet, so every paste is held.
+    if (!useModel && !rules.changed && hiddenFindings.length === 0) {
       return;
     }
 
@@ -124,36 +140,89 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
       placeCaretAtPoint(editable, dropPoint.x, dropPoint.y);
     }
 
+    if (!useModel) {
+      finish(editable, source, rules, hiddenFindings, false);
+      return;
+    }
+
+    // Keep pastes in order while each waits for the model.
+    pending = pending.then(async () => {
+      const candidates = await detectNamesWithTimeout(source);
+      const result = candidates ? redact(source, settings, candidates) : rules;
+      finish(editable, source, result, hiddenFindings, !candidates);
+    });
+  }
+
+  /**
+   * @param {HTMLElement} editable
+   * @param {string} source
+   * @param {import("./redactor.js").RedactionResult} result
+   * @param {Finding[]} hiddenFindings
+   * @param {boolean} modelFailed
+   */
+  function finish(editable, source, result, hiddenFindings, modelFailed) {
     let inserted;
     try {
-      inserted = insertText(editable, result.text);
+      inserted = insertText(editable, result.changed ? result.text : source);
     } catch (_error) {
       inserted = false;
     }
 
     if (!inserted) {
-      show("SafePaste AI blocked this paste: it contained sensitive data and the redacted text could not be inserted. Nothing was pasted.");
+      show("SafePaste AI blocked this paste: the redacted text could not be inserted. Nothing was pasted.");
       return;
     }
 
     const findings = result.changed ? result.findings : hiddenFindings;
-    if (settings.showToast) {
-      show(result.changed
-        ? `SafePaste AI: redacted ${plural(findings.length, "item")}.`
-        : `SafePaste AI: pasted as plain text because links or formatting contained ${plural(findings.length, "sensitive item")}.`);
+    if (settings.showToast || modelFailed) {
+      const fallback = modelFailed ? " The name model did not respond, so only the built-in rules were used." : "";
+      if (result.changed) {
+        show(`SafePaste AI: redacted ${plural(findings.length, "item")}.${fallback}`);
+      } else if (findings.length) {
+        show(`SafePaste AI: pasted as plain text because links or formatting contained ${plural(findings.length, "sensitive item")}.${fallback}`);
+      } else if (modelFailed) {
+        show(`SafePaste AI: nothing to redact.${fallback}`);
+      }
     }
 
-    storage.local.set({
-      [LAST_REDACTION_KEY]: {
-        site: site.name,
-        timestamp: new Date().toISOString(),
-        findings: summarizeFindings(findings)
-      }
-    }).catch(() => {});
+    if (findings.length) {
+      storage.local.set({
+        [LAST_REDACTION_KEY]: {
+          site: site.name,
+          timestamp: new Date().toISOString(),
+          findings: summarizeFindings(findings)
+        }
+      }).catch(() => {});
+    }
+  }
+
+  /**
+   * Names from the local model, or null if it failed or took too long.
+   * @param {string} text
+   * @returns {Promise<Candidate[] | null>}
+   */
+  async function detectNamesWithTimeout(text) {
+    const limit = Math.min(NAME_MODEL_MAX_WAIT_MS, NAME_MODEL_BASE_WAIT_MS + text.length * NAME_MODEL_WAIT_MS_PER_CHAR);
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let timer;
+    const slowNotice = setTimeout(() => show("SafePaste AI: checking for names…"), 600);
+    try {
+      return await Promise.race([
+        /** @type {NameModel} */ (nameModel).detect(text).catch(() => null),
+        new Promise((resolve) => {
+          timer = setTimeout(() => resolve(null), limit);
+        })
+      ]);
+    } finally {
+      clearTimeout(timer);
+      clearTimeout(slowNotice);
+    }
   }
 
   return {
     ready,
+    /** Resolves once every held paste has been inserted. */
+    whenIdle: () => pending,
     dispose() {
       for (const [type, listener] of listeners) {
         win.removeEventListener(type, listener, true);

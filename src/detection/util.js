@@ -12,6 +12,8 @@
  * @property {Confidence} confidence
  * @property {boolean} [contextual] Only personal data when near other personal
  *   data (place names, institutions); promoted from "low" in that case.
+ * @property {"model"} [source] Set for NER model output, which never counts as
+ *   nearby personal data for promoting contextual candidates.
  */
 
 /**

@@ -26,17 +26,43 @@ const args = new Set(process.argv.slice(2));
 const extensionBuild = {
   entryPoints: {
     contentScript: join(root, "src", "contentScript.js"),
-    popup: join(root, "src", "popup", "popup.js")
+    popup: join(root, "src", "popup", "popup.js"),
+    background: join(root, "src", "background.js")
   },
   outdir: outDir,
   bundle: true,
   format: "iife",
-  target: "chrome114",
+  target: "chrome116",
   // Chrome Web Store review requires readable code, so no minification.
   minify: false,
   legalComments: "none",
   logLevel: "info"
 };
+
+// The offscreen document runs the optional name model with transformers.js.
+// It is an ES module because the ONNX runtime loads its WebAssembly glue
+// with a dynamic import.
+const onnxWasmOnly = join(root, "node_modules", "onnxruntime-web", "dist", "ort.wasm.min.mjs");
+/** @type {esbuild.BuildOptions} */
+const offscreenBuild = {
+  entryPoints: { offscreen: join(root, "src", "offscreen", "offscreen.js") },
+  outdir: outDir,
+  bundle: true,
+  format: "esm",
+  target: "chrome116",
+  minify: false,
+  legalComments: "none",
+  logLevel: "info",
+  // transformers.js imports the WebGPU build of the runtime (28 MB of
+  // WebAssembly). The model runs fine on the CPU build, which is half the size.
+  alias: {
+    "onnxruntime-web/webgpu": onnxWasmOnly,
+    "onnxruntime-web": onnxWasmOnly
+  }
+};
+
+// Runtime files loaded by the offscreen document from inside the extension.
+const ONNX_RUNTIME_FILES = ["ort-wasm-simd-threaded.mjs", "ort-wasm-simd-threaded.wasm"];
 
 /** @type {esbuild.BuildOptions} */
 const harnessBuild = {
@@ -69,6 +95,11 @@ async function main() {
   }
 
   await esbuild.build(extensionBuild);
+  await esbuild.build(offscreenBuild);
+  mkdirSync(join(outDir, "ort"), { recursive: true });
+  for (const file of ONNX_RUNTIME_FILES) {
+    cpSync(join(root, "node_modules", "onnxruntime-web", "dist", file), join(outDir, "ort", file));
+  }
   validatePackage(manifest);
 
   if (args.has("--zip")) {
@@ -99,6 +130,10 @@ function validatePackage(manifest) {
 
   const referenced = [
     ...(manifest.content_scripts || []).flatMap((script) => script.js || []),
+    manifest.background && manifest.background.service_worker,
+    "offscreen.html",
+    "offscreen.js",
+    ...ONNX_RUNTIME_FILES.map((file) => `ort/${file}`),
     manifest.action && manifest.action.default_popup,
     manifest.options_page,
     ...Object.values(manifest.icons || {})

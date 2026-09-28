@@ -1,0 +1,41 @@
+=== names-benign/public-figures-history
+Compare Marie Curie's and Albert Einstein's contributions to physics, and explain why Niels Bohr disagreed with Einstein about quantum mechanics.
+
+=== names-benign/tech-leaders
+What did Satya Nadella change at Microsoft, and how does his strategy differ from Tim Cook's at Apple?
+
+=== names-benign/fictional-characters
+Write a short scene where Sherlock Holmes and Hermione Granger solve a mystery together in Middle-earth.
+
+=== names-benign/sports
+Who scored more goals for Barcelona, Lionel Messi or Luis Suárez, during the 2015-16 season?
+
+=== names-benign/literature
+Summarize the themes of Anna Karenina by Leo Tolstoy and compare them with Madame Bovary.
+
+=== names-benign/products-and-brands
+Should we build on Next.js or Remix? We already use Vercel, Stripe and Supabase, and the design team uses Figma.
+
+=== names-benign/places-general
+What's the best time of year to visit Kyoto, and is a day trip to Nara worth it?
+
+=== names-benign/company-analysis
+Why did Nokia lose the smartphone market to Samsung and Apple, and what could BlackBerry have done differently?
+
+=== names-benign/music
+Recommend albums similar to Kind of Blue by Miles Davis and A Love Supreme by John Coltrane.
+
+=== names-benign/politics-general
+Explain the difference between the roles of the President of the European Commission and the President of the European Council.
+
+=== names-benign/science-eponyms
+Explain Bayes' theorem, the Fourier transform and the Doppler effect with one example each.
+
+=== names-benign/code-with-classnames
+class OrderService {
+  constructor(private readonly paymentGateway: PaymentGateway, private readonly logger: Logger) {}
+  async refund(order: Order) {
+    await this.paymentGateway.refund(order.chargeId);
+    this.logger.info("Refund issued");
+  }
+}

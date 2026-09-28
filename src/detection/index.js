@@ -69,7 +69,7 @@ const ANCHOR_CATEGORIES = new Set(["people", "emails", "phones", "addresses", "g
  */
 function promoteNearPersonalData(candidates) {
   const anchors = candidates.filter(
-    (candidate) => !candidate.contextual &&
+    (candidate) => !candidate.contextual && candidate.source !== "model" &&
       (ANCHOR_CATEGORIES.has(candidate.category) || candidate.type === "COORDINATES") &&
       CONFIDENCE_RANK[candidate.confidence] >= 1
   );
