@@ -1,3 +1,13 @@
+// Automated part of LIVE_SITE_QA.md: runs the built extension against the real
+// ChatGPT, Gemini and Claude prompt editors using your logged-in QA profile.
+// It only pastes fake sample data and clears it again; it never sends a message.
+//
+//   npm run build && npm run test:live
+//   LIVE_QA_SITES=claude npm run test:live     # one site only
+//
+// If a site shows a login or Cloudflare check, complete it in the opened
+// window (or use npm run qa:live:open) and rerun.
+
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -10,12 +20,12 @@ const extensionPath = path.join(root, "dist", "safepaste-ai");
 // Kept outside the repository: it holds real logins to the AI sites.
 const profileDir = process.env.SAFEPASTE_QA_PROFILE || path.join(os.homedir(), ".safepaste-ai", "playwright-profile");
 const outputDir = path.join(root, "test-results", "live-playwright");
+const MOD = process.platform === "darwin" ? "Meta" : "Control";
 
-const SAMPLE = [
+const CONTACT_SAMPLE = [
   "Do not send this. This is a redaction QA paste.",
   "Contact Dr. Jane Smith at jane.smith@example.com or +1 415-555-0199.",
   "Use test card 4111 1111 1111 1111 and token sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890.",
-  "Address Icon",
   "906 W 2ND AVE, STE 100",
   "SPOKANE, WA 99201-4540, United States"
 ].join("\n");
@@ -27,10 +37,8 @@ const SITES = [
     url: "https://chatgpt.com/",
     editorSelectors: [
       "#prompt-textarea",
-      "textarea[data-id='root']",
       "div.ProseMirror[contenteditable='true']",
-      "[contenteditable='true'][aria-label*='message' i]",
-      "[contenteditable='true'][data-placeholder*='message' i]"
+      "[contenteditable='true'][aria-label*='message' i]"
     ]
   },
   {
@@ -39,30 +47,104 @@ const SITES = [
     url: "https://gemini.google.com/app",
     editorSelectors: [
       "rich-textarea [contenteditable='true']",
-      "rich-textarea textarea",
       "div.ql-editor[contenteditable='true']",
-      "[contenteditable='true'][aria-label*='prompt' i]",
-      "[contenteditable='true'][aria-label*='message' i]"
+      "[contenteditable='true'][aria-label*='prompt' i]"
     ]
   },
   {
     id: "claude",
     name: "Claude",
-    url: "https://claude.ai/",
+    url: "https://claude.ai/new",
     editorSelectors: [
+      "[data-testid='chat-input'] [contenteditable='true']",
       "div.ProseMirror[contenteditable='true']",
-      "[contenteditable='true'][aria-label*='message' i]",
-      "[contenteditable='true'][aria-label*='prompt' i]",
-      "[contenteditable='true'][data-placeholder*='reply' i]"
+      "[contenteditable='true'][aria-label*='prompt' i]"
     ]
   }
 ];
 
+/**
+ * @typedef {import("playwright").Page} Page
+ * @typedef {import("playwright").Locator} Locator
+ * @typedef {{ page: Page, editor: Locator }} Ctx
+ * @typedef {{ name: string, known?: string, run: (ctx: Ctx) => Promise<void> }} Check
+ */
+
+/** @type {Check[]} */
+const CHECKS = [
+  {
+    name: "Contact, card and API key are redacted",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, CONTACT_SAMPLE);
+      for (const placeholder of ["PERSON_1", "EMAIL_1", "PHONE_1", "CREDIT_CARD_1", "OPENAI_API_KEY_1", "ADDRESS_1"]) {
+        assert.ok(text.includes(`[[${placeholder}]]`), `missing [[${placeholder}]]`);
+      }
+      assertNoLeak(text, ["Jane Smith", "jane.smith@example.com", "415-555-0199", "4111 1111 1111 1111", "sk-proj-AbCd", "906 W 2ND AVE", "SPOKANE, WA 99201"]);
+    }
+  },
+  {
+    name: "Multiline formatting is kept",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, "first line\nmail jane.smith@example.com\nthird line");
+      const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+      assert.deepEqual(lines, ["first line", "mail [[EMAIL_1]]", "third line"]);
+    }
+  },
+  {
+    name: "Code block with an API key",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, "```bash\nexport GITHUB_TOKEN=ghp_R4nD0mT0k3nV4lu3F0rT3st1ngPurp0s3s12\nnpm publish\n```");
+      assertNoLeak(text, ["ghp_R4nD0m"]);
+      assert.ok(text.includes("npm publish"), "surrounding code was lost");
+    }
+  },
+  {
+    name: "Infrastructure log with IP and token",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, "10.12.4.31 GET /health 200\nAuthorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U");
+      assertNoLeak(text, ["10.12.4.31", "eyJhbGciOiJIUzI1NiJ9"]);
+    }
+  },
+  {
+    name: "JSON config with a password field",
+    known: "Phase 2: quoted JSON keys are not detected yet",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, "{\n  \"user\": \"app_rw\",\n  \"password\": \"hunter2-Prod!\"\n}");
+      assertNoLeak(text, ["hunter2-Prod!"]);
+    }
+  },
+  {
+    name: "Harmless prompt is pasted unchanged",
+    async run({ page, editor }) {
+      const text = await pasteAndRead(page, editor, "Explain how to debounce a text input in React.");
+      assert.equal(text.trim(), "Explain how to debounce a text input in React.");
+    }
+  },
+  {
+    name: "Pasting over a selection replaces only the selection",
+    async run({ page, editor }) {
+      await clearEditor(page, editor);
+      await page.keyboard.type("keep this REPLACE_ME end");
+      await selectWord(editor, "REPLACE_ME");
+      const text = await pasteAndRead(page, editor, "jane.smith@example.com", { clear: false });
+      assert.equal(text.trim(), "keep this [[EMAIL_1]] end");
+    }
+  },
+  {
+    name: "Undo removes the redacted paste",
+    async run({ page, editor }) {
+      await pasteAndRead(page, editor, "mail jane.smith@example.com");
+      await page.keyboard.press(`${MOD}+Z`);
+      await page.waitForTimeout(300);
+      const text = await readEditor(editor);
+      assert.ok(!text.includes("[[EMAIL_1]]"), `undo left: ${JSON.stringify(text)}`);
+      assertNoLeak(text, ["jane.smith@example.com"]);
+    }
+  }
+];
+
 const requestedSites = new Set(
-  (process.env.LIVE_QA_SITES || "")
-    .split(",")
-    .map((site) => site.trim().toLowerCase())
-    .filter(Boolean)
+  (process.env.LIVE_QA_SITES || "").split(",").map((site) => site.trim().toLowerCase()).filter(Boolean)
 );
 
 main().catch((error) => {
@@ -75,7 +157,7 @@ async function main() {
   assert.equal(fs.existsSync(path.join(extensionPath, "manifest.json")), true, "Run npm run build before live QA");
   validatePackageInputs();
 
-  const browser = await chromium.launchPersistentContext(profileDir, {
+  const context = await chromium.launchPersistentContext(profileDir, {
     headless: false,
     ignoreDefaultArgs: ["--disable-extensions"],
     args: [
@@ -84,126 +166,104 @@ async function main() {
       "--no-first-run",
       "--no-default-browser-check"
     ],
+    permissions: ["clipboard-read", "clipboard-write"],
     viewport: { width: 1440, height: 1000 }
   });
 
+  /** @type {{ site: string, check: string, status: string, detail: string }[]} */
   const results = [];
   try {
+    const extensionId = await findExtensionId(context);
     for (const site of selectedSites()) {
-      const page = await browser.newPage();
+      const page = await context.newPage();
       try {
-        const result = await testSite(page, site);
-        results.push(result);
-        await page.screenshot({
-          path: path.join(outputDir, `${site.id}.png`),
-          fullPage: true
-        }).catch(() => {});
+        await page.goto(site.url, { waitUntil: "domcontentloaded", timeout: 60000 });
+        const editor = await findEditor(page, site.editorSelectors, 90000);
+        if (!editor) {
+          results.push({ site: site.name, check: "open prompt editor", status: "blocked", detail: "Prompt editor not found: log in or pass the Cloudflare check in the opened window, then rerun." });
+          continue;
+        }
+
+        for (const check of CHECKS) {
+          results.push(await runCheck(site.name, check, { page, editor }));
+        }
+        results.push(await runCheck(site.name, {
+          name: "Turning the extension off in the popup stops redaction",
+          async run(ctx) {
+            await setEnabled(context, extensionId, false);
+            try {
+              await ctx.page.bringToFront();
+              const text = await pasteAndRead(ctx.page, ctx.editor, "mail jane.smith@example.com");
+              assert.ok(text.includes("jane.smith@example.com"), `still redacted: ${JSON.stringify(text)}`);
+            } finally {
+              await setEnabled(context, extensionId, true);
+              await ctx.page.bringToFront();
+            }
+          }
+        }, { page, editor }));
+
+        await clearEditor(page, editor).catch(() => {});
+        await page.screenshot({ path: path.join(outputDir, `${site.id}.png`) }).catch(() => {});
       } catch (error) {
-        results.push({
-          name: site.name,
-          status: "blocked",
-          detail: `Live page could not be tested: ${error.message}`
-        });
+        results.push({ site: site.name, check: "run", status: "blocked", detail: /** @type {Error} */ (error).message.split("\n")[0] });
       } finally {
         if (!page.isClosed()) {
+          await clearAnyEditor(page, site.editorSelectors);
           await page.close();
         }
       }
     }
   } finally {
-    await browser.close();
+    await context.close();
   }
 
   const reportPath = path.join(outputDir, "results.json");
   fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
+  console.table(results);
 
-  const failed = results.filter((result) => result.status !== "passed");
-  console.table(results.map(({ name, status, detail }) => ({ name, status, detail })));
-  if (failed.length > 0) {
-    throw new Error(`Live QA did not pass for ${failed.map((result) => result.name).join(", ")}. See ${reportPath}`);
+  const failed = results.filter((result) => result.status === "failed" || result.status === "blocked");
+  if (failed.length) {
+    process.exitCode = 1;
+    console.log(`\n${failed.length} check(s) failed or were blocked. Details: ${reportPath}`);
+  } else {
+    console.log(`\nAll live checks passed (known gaps are listed as "known"). Details: ${reportPath}`);
   }
+}
 
-  console.log(`Live Playwright QA passed. Results: ${reportPath}`);
+/**
+ * @param {string} siteName
+ * @param {Check} check
+ * @param {Ctx} ctx
+ */
+async function runCheck(siteName, check, ctx) {
+  try {
+    await check.run(ctx);
+    return { site: siteName, check: check.name, status: check.known ? "fixed?" : "passed", detail: check.known ? `expected to fail (${check.known}) but passed` : "" };
+  } catch (error) {
+    const message = /** @type {Error} */ (error).message.split("\n")[0];
+    return { site: siteName, check: check.name, status: check.known ? "known" : "failed", detail: check.known ? `${check.known}: ${message}` : message };
+  }
 }
 
 function selectedSites() {
-  if (requestedSites.size === 0) {
-    return SITES;
-  }
-
-  return SITES.filter((site) => requestedSites.has(site.id) || requestedSites.has(site.name.toLowerCase()));
+  return requestedSites.size === 0
+    ? SITES
+    : SITES.filter((site) => requestedSites.has(site.id) || requestedSites.has(site.name.toLowerCase()));
 }
 
-async function testSite(page, site) {
-  await page.goto(site.url, { waitUntil: "domcontentloaded", timeout: 60000 });
-
-  const editor = await findEditor(page, site.editorSelectors, 120000);
-  if (!editor) {
-    return {
-      name: site.name,
-      status: "blocked",
-      detail: "Prompt editor not found. Log in in the opened Chrome window, then rerun this test."
-    };
-  }
-
-  await clearEditor(page, editor);
-  await page.evaluate((text) => navigator.clipboard.writeText(text), SAMPLE);
-  await editor.click({ timeout: 10000 });
-  await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
-  await page.waitForTimeout(1000);
-
-  const text = await readEditorText(editor);
-  const expectedPatterns = [
-    /\[\[PERSON_1\]\]/,
-    /\[\[EMAIL_1\]\]/,
-    /\[\[PHONE_1\]\]/,
-    /\[\[CREDIT_CARD_1\]\]/,
-    /\[\[OPENAI_API_KEY_1\]\]/,
-    /\[\[ADDRESS_1\]\]/,
-    /\[\[ADDRESS_2\]\]/
-  ];
-  const leakedPatterns = [
-    /Jane Smith/,
-    /jane\.smith@example\.com/,
-    /\+1 415-555-0199/,
-    /4111 1111 1111 1111/,
-    /sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890/,
-    /906 W 2ND AVE/,
-    /SPOKANE, WA 99201-4540/
-  ];
-
-  const missing = expectedPatterns.filter((pattern) => !pattern.test(text)).map(String);
-  const leaked = leakedPatterns.filter((pattern) => pattern.test(text)).map(String);
-
-  await page.keyboard.press(process.platform === "darwin" ? "Meta+Z" : "Control+Z").catch(() => {});
-
-  if (missing.length || leaked.length) {
-    return {
-      name: site.name,
-      status: "failed",
-      detail: `Missing ${missing.join(", ") || "none"}; leaked ${leaked.join(", ") || "none"}`
-    };
-  }
-
-  return {
-    name: site.name,
-    status: "passed",
-    detail: "Paste redacted and no original sensitive sample values remained in editor."
-  };
-}
-
+/**
+ * @param {Page} page
+ * @param {string[]} selectors
+ * @param {number} timeoutMs
+ * @returns {Promise<Locator | null>}
+ */
 async function findEditor(page, selectors, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  while (Date.now() < deadline && !page.isClosed()) {
     for (const selector of selectors) {
-      if (page.isClosed()) {
-        return null;
-      }
       const locator = page.locator(selector).first();
-      if (await locator.count().catch(() => 0)) {
-        if (await locator.isVisible().catch(() => false)) {
-          return locator;
-        }
+      if ((await locator.count().catch(() => 0)) && (await locator.isVisible().catch(() => false))) {
+        return locator;
       }
     }
     await page.waitForTimeout(1000);
@@ -211,19 +271,114 @@ async function findEditor(page, selectors, timeoutMs) {
   return null;
 }
 
-async function clearEditor(page, editor) {
-  await editor.click({ timeout: 10000 });
-  await page.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A");
-  await page.keyboard.press("Backspace");
+/**
+ * Real Ctrl+V paste through the system clipboard, then returns the editor text.
+ * @param {Page} page
+ * @param {Locator} editor
+ * @param {string} text
+ * @param {{ clear?: boolean }} [options]
+ */
+async function pasteAndRead(page, editor, text, { clear = true } = {}) {
+  if (clear) {
+    await clearEditor(page, editor);
+  }
+  await page.evaluate((value) => navigator.clipboard.writeText(value), text);
+  await editor.focus();
+  await page.keyboard.press(`${MOD}+V`);
+  await page.waitForTimeout(700);
+  return readEditor(editor);
 }
 
-async function readEditorText(editor) {
-  return await editor.evaluate((element) => {
-    if ("value" in element) {
-      return element.value;
+/**
+ * @param {Page} page
+ * @param {Locator} editor
+ */
+async function clearEditor(page, editor) {
+  await editor.click({ timeout: 10000 });
+  await page.keyboard.press(`${MOD}+A`);
+  await page.keyboard.press("Backspace");
+  await page.waitForTimeout(200);
+}
+
+/**
+ * Leaves no QA text behind in the real site's draft.
+ * @param {Page} page
+ * @param {string[]} selectors
+ */
+async function clearAnyEditor(page, selectors) {
+  const editor = await findEditor(page, selectors, 1000).catch(() => null);
+  if (editor) {
+    await clearEditor(page, editor).catch(() => {});
+  }
+}
+
+/** @param {Locator} editor */
+function readEditor(editor) {
+  return editor.evaluate((element) => ("value" in element ? String(element.value) : /** @type {HTMLElement} */ (element).innerText || ""));
+}
+
+/**
+ * @param {Locator} editor
+ * @param {string} word
+ */
+async function selectWord(editor, word) {
+  await editor.evaluate((element, target) => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const index = (node.nodeValue || "").indexOf(target);
+      if (index >= 0) {
+        const range = document.createRange();
+        range.setStart(node, index);
+        range.setEnd(node, index + target.length);
+        const selection = /** @type {Selection} */ (document.getSelection());
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return;
+      }
     }
-    return element.innerText || element.textContent || "";
+    throw new Error(`"${target}" not found in editor`);
+  }, word);
+}
+
+/**
+ * @param {string} text
+ * @param {string[]} originals
+ */
+function assertNoLeak(text, originals) {
+  const leaked = originals.filter((value) => text.includes(value));
+  assert.deepEqual(leaked, [], `leaked ${leaked.join(", ")}`);
+}
+
+/** @param {import("playwright").BrowserContext} context */
+async function findExtensionId(context) {
+  const page = await context.newPage();
+  await page.goto("chrome://extensions");
+  const id = await page.evaluate(async () => {
+    // @ts-ignore chrome.developerPrivate exists on chrome://extensions
+    const items = await chrome.developerPrivate.getExtensionsInfo();
+    return items.find((/** @type {{ name: string }} */ item) => item.name === "SafePaste AI")?.id;
   });
+  await page.close();
+  assert.ok(id, "SafePaste AI is not loaded");
+  return id;
+}
+
+/**
+ * Flips the popup's Enabled switch, as a user would.
+ * @param {import("playwright").BrowserContext} context
+ * @param {string} extensionId
+ * @param {boolean} enabled
+ */
+async function setEnabled(context, extensionId, enabled) {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const toggle = popup.locator("#enabled");
+  await toggle.waitFor();
+  if ((await toggle.isChecked()) !== enabled) {
+    await toggle.click();
+  }
+  await popup.waitForTimeout(300);
+  await popup.close();
 }
 
 function validatePackageInputs() {
