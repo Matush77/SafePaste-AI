@@ -24,7 +24,7 @@ SWIFT: «financial:FRBBUS6S»
 Can you check the math on invoice INV-2024-00318? Subtotal $12,480.00, tax 8.25% = $1,029.60, total $13,509.60. Payment due within 30 days.
 
 === finance/card-in-support-chat
-customer wrote: "my card «financial:4242424242424242» exp 09/27 cvv «financial:123» keeps getting declined, what do i do"
+customer wrote: "my card «financial:4242424242424242» exp «financial:09/27» cvv «financial:123» keeps getting declined, what do i do"
 
 === government/ssn-formats
 Clean up this spreadsheet column so all SSNs use the same format:

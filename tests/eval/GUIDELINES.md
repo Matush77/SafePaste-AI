@@ -28,7 +28,7 @@ Files named `benign-*.txt` must not contain any labels. Every redaction in them 
 | credentials | Only the secret value: passwords, client secrets, the password part of a connection string, session cookies. | The key or field name. Variable references (`password = getPassword()`, `$DB_PASSWORD`, `process.env.TOKEN`). |
 | emails | Every real-looking address of a person or organisation. | |
 | phones | The full number including country code and extension. | Order numbers, timestamps, IDs and other digit runs that are not phone numbers. |
-| financial | Card numbers, IBANs, account and routing numbers. | Prices, amounts, invoice numbers. |
+| financial | Card numbers with their expiry date and CVV (cardholder data under PCI DSS), IBANs, account and routing numbers. | Prices, amounts, invoice numbers. |
 | governmentIds | SSNs, passport, national ID, tax ID, driving licence numbers, and dates of birth given as such. | Other dates. |
 | network | Public and private IP addresses and MAC addresses of real infrastructure. | `127.0.0.1`, `0.0.0.0`, `localhost`, CIDR examples in documentation, version numbers. |
 | addresses | Street address lines, PO boxes, and city + postcode lines of a specific person or site. | A city mentioned on its own (see locations). |

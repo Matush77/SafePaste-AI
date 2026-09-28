@@ -144,8 +144,7 @@
     "text": "Help debug map loading in Berlin.\nGoogle key: AIzaSyA1234567890abcdefghijklmnopqrstuv\nInternal page: https://maps.example.com/internal",
     "sensitive": [
       "AIzaSyA1234567890abcdefghijklmnopqrstuv",
-      "https://maps.example.com/internal",
-      "Berlin"
+      "https://maps.example.com/internal"
     ]
   },
   {
