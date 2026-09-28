@@ -29,9 +29,10 @@ const MEANINGFUL = /[\p{L}\p{N}]/u;
 /**
  * @param {Sample[]} samples
  * @param {Partial<Settings>} [settings]
+ * @param {(text: string, settings?: Partial<Settings>) => Match[]} [detector] Defaults to the real engine.
  * @returns {Report}
  */
-export function scoreCorpus(samples, settings) {
+export function scoreCorpus(samples, settings, detector = detect) {
   /** @type {Record<string, RecallStats>} */
   const recallByCategory = {};
   /** @type {Record<string, PrecisionStats>} */
@@ -51,7 +52,7 @@ export function scoreCorpus(samples, settings) {
   let benignUnchanged = 0;
 
   for (const sample of samples) {
-    const predicted = detect(sample.text, settings);
+    const predicted = detector(sample.text, settings);
     const covered = new Uint8Array(sample.text.length);
     for (const match of predicted) {
       covered.fill(1, match.start, match.end);

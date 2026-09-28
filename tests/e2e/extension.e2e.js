@@ -18,7 +18,7 @@ const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 const UNDO = process.platform === "darwin" ? "Meta+Z" : "Control+Z";
 
 const SENSITIVE = "Contact Dr. Jane Smith at jane.smith@example.com, key sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890.";
-const REDACTED = "Contact [[PERSON_1]] at [[EMAIL_1]], key [[OPENAI_API_KEY_1]].";
+const REDACTED = "Contact Dr. [[PERSON_1]] at [[EMAIL_1]], key [[OPENAI_API_KEY_1]].";
 
 const FIXTURES = {
   "https://chatgpt.com/": `<!doctype html><html><body>
@@ -92,6 +92,24 @@ const CASES = [
       });
       assert.equal((await textOf(page, "#rich")).trim(), "Reset link");
       assert.equal(await page.locator("#rich a").count(), 0, "link with token was pasted");
+    }
+  },
+  {
+    name: "Popup sensitivity Strict: low-confidence matches are redacted too",
+    async run(page) {
+      const sample = "Batch 12-3456789 shipped on time.";
+      await open(page, "https://chatgpt.com/");
+      await pasteInto(page, "#prompt-textarea", { "text/plain": sample });
+      assert.equal(await valueOf(page, "#prompt-textarea"), sample, "Balanced should keep it");
+
+      await setSensitivity(page, "strict");
+      try {
+        await open(page, "https://chatgpt.com/");
+        await pasteInto(page, "#prompt-textarea", { "text/plain": sample });
+        assert.ok(!(await valueOf(page, "#prompt-textarea")).includes("12-3456789"), "Strict should redact it");
+      } finally {
+        await setSensitivity(page, "balanced");
+      }
     }
   },
   {
@@ -218,6 +236,19 @@ async function setEnabled(page, enabled) {
   await toggle.waitFor();
   if ((await toggle.isChecked()) !== enabled) {
     await toggle.click();
+  }
+  await page.waitForTimeout(200);
+}
+
+/**
+ * @param {import("playwright").Page} page
+ * @param {"balanced" | "strict"} level
+ */
+async function setSensitivity(page, level) {
+  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  await page.locator("#sensitivity").selectOption(level);
+  if (process.env.POPUP_SCREENSHOT) {
+    await page.screenshot({ path: process.env.POPUP_SCREENSHOT, fullPage: true });
   }
   await page.waitForTimeout(200);
 }

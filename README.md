@@ -23,6 +23,8 @@ Safety behaviour:
 - Rich-text pastes whose links or attributes hide a sensitive value (for example a reset link carrying a token) are pasted as plain text.
 - Login, email, search and other non-prompt fields are never touched.
 
+Detection combines known token formats, checksums (Luhn, IBAN, SSN, NHS and birth numbers), key names in config files and JSON, field names in tables, and context words. Every match has a confidence, and the popup's **Sensitivity** setting chooses what is redacted: **Balanced** (default) redacts confident matches; **Strict** also redacts likely ones, such as random-looking strings with no key name nearby. Place and institution names count as personal data only when other personal data is nearby, so "a trip from New York to Paris" is left alone.
+
 This is a heuristic safety layer, not a compliance boundary. Current quality is measured by `npm run eval`, described below.
 
 ## Development
@@ -40,7 +42,8 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 
 | Path | Contents |
 |---|---|
-| `src/redactor.js` | Detection and redaction. Pure functions, no browser APIs. |
+| `src/redactor.js` | Public engine API: settings, `detect()`, `redact()`, placeholders. Pure functions, no browser APIs. |
+| `src/detection/` | Detection rules by area (secrets, contact details, financial, government IDs, network, addresses, structured fields, people/organisations/places) and the step that merges their results. |
 | `src/siteAdapters.js` | Supported sites, prompt-editor detection, text insertion. |
 | `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour. |
 | `src/contentScript.js` | Content-script entry point. |
@@ -79,7 +82,9 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 - **Precision:** the share of redactions that hit something sensitive. False positives break code and prose and push users to turn the extension off.
 - **Benign samples unchanged:** the share of harmless samples pasted with no changes at all.
 
-`tests/eval/baseline.json` stores the accepted scores, and `npm test` fails if any of them gets worse. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
+`tests/eval/holdout/` is a second labelled set that detection rules are never tuned against. `npm run eval -- --holdout` scores it, which shows whether an improvement generalises or only fits the main corpus.
+
+`tests/eval/baseline.json` and `baseline-holdout.json` store the accepted scores, and `npm test` fails if any of them gets worse. `tests/unit/performance.test.js` also fails if any input makes detection slow, because detection runs inside the paste handler. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
 
 ## Release
 

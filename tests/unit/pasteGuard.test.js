@@ -107,7 +107,7 @@ describe("paste into the prompt editor", () => {
     const event = paste(prompt, { "text/plain": SENSITIVE });
 
     expect(event.defaultPrevented).toBe(true);
-    expect(prompt.value).toBe("Contact [[PERSON_1]] at [[EMAIL_1]].");
+    expect(prompt.value).toBe("Contact Dr. [[PERSON_1]] at [[EMAIL_1]].");
     expect(notices).toEqual(["SafePaste AI: redacted 2 items."]);
     expect(localWrites).toHaveLength(1);
   });
@@ -160,7 +160,7 @@ describe("failing closed", () => {
 
     paste(prompt, { "text/plain": SENSITIVE });
 
-    expect(prompt.value).toBe("Contact [[PERSON_1]] at [[EMAIL_1]].");
+    expect(prompt.value).toBe("Contact Dr. [[PERSON_1]] at [[EMAIL_1]].");
   });
 
   it("blocks the paste and says so when the redacted text cannot be inserted", async () => {
@@ -285,7 +285,7 @@ describe("drag and drop", () => {
     const event = drop(prompt, { "text/plain": SENSITIVE });
 
     expect(event.defaultPrevented).toBe(true);
-    expect(prompt.value).toBe("Contact [[PERSON_1]] at [[EMAIL_1]].");
+    expect(prompt.value).toBe("Contact Dr. [[PERSON_1]] at [[EMAIL_1]].");
   });
 
   it("leaves text dragged within the page alone", async () => {

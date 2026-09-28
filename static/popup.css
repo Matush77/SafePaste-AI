@@ -271,6 +271,13 @@ select {
   color: var(--muted);
 }
 
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 8px 2px 0;
+}
+
 @media (min-width: 760px) {
   body {
     min-height: 100vh;

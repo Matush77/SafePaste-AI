@@ -23,6 +23,18 @@
       </header>
 
       <section>
+        <h2>Sensitivity</h2>
+        <label class="select-row">
+          <span>Level</span>
+          <select id="sensitivity" aria-describedby="sensitivityHint">
+            <option value="balanced">Balanced</option>
+            <option value="strict">Strict</option>
+          </select>
+        </label>
+        <p id="sensitivityHint" class="hint">Balanced redacts confident matches. Strict also redacts likely ones, such as random-looking strings and place names on their own.</p>
+      </section>
+
+      <section>
         <h2>Detect</h2>
         <div id="categories" class="toggles"></div>
       </section>

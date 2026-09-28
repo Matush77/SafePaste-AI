@@ -20,6 +20,7 @@ const CATEGORY_NAMES = {
 const enabled = /** @type {HTMLInputElement} */ (document.getElementById("enabled"));
 const categories = /** @type {HTMLElement} */ (document.getElementById("categories"));
 const placeholderStyle = /** @type {HTMLSelectElement} */ (document.getElementById("placeholderStyle"));
+const sensitivity = /** @type {HTMLSelectElement} */ (document.getElementById("sensitivity"));
 const showToast = /** @type {HTMLInputElement} */ (document.getElementById("showToast"));
 const lastRedaction = /** @type {HTMLElement} */ (document.getElementById("lastRedaction"));
 
@@ -40,6 +41,7 @@ function init() {
 
   enabled.addEventListener("change", () => updateSettings({ enabled: enabled.checked }));
   placeholderStyle.addEventListener("change", () => updateSettings({ placeholderStyle: /** @type {"typed" | "compact"} */ (placeholderStyle.value) }));
+  sensitivity.addEventListener("change", () => updateSettings({ sensitivity: /** @type {"balanced" | "strict"} */ (sensitivity.value) }));
   showToast.addEventListener("change", () => updateSettings({ showToast: showToast.checked }));
 }
 
@@ -72,6 +74,7 @@ function renderCategoryControls() {
 function renderSettings() {
   enabled.checked = settings.enabled;
   placeholderStyle.value = settings.placeholderStyle;
+  sensitivity.value = settings.sensitivity;
   showToast.checked = settings.showToast;
 
   for (const input of categories.querySelectorAll("input[data-category]")) {

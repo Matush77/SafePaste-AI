@@ -29,17 +29,33 @@ describe("loadCorpus", () => {
   });
 });
 
+/**
+ * A detector that redacts every occurrence of `needle`, for testing the
+ * scorer independently of the real engine.
+ * @param {string} needle
+ */
+function redactsEvery(needle) {
+  return (/** @type {string} */ text) => {
+    /** @type {import("../../src/redactor.js").Match[]} */
+    const matches = [];
+    for (let index = text.indexOf(needle); index !== -1; index = text.indexOf(needle, index + needle.length)) {
+      matches.push({ start: index, end: index + needle.length, value: needle, type: "TEST", category: "credentials" });
+    }
+    return matches;
+  };
+}
+
 describe("scoreCorpus", () => {
   it("counts a partly redacted value as a miss", () => {
-    const samples = corpusFrom({ "a.txt": "=== s1\nnpm token «apiKeys:npm_abcdefghijklmnopqrstuvwxyz0123456789»\n" });
-    const report = scoreCorpus(samples);
-    expect(report.recallByCategory.apiKeys).toMatchObject({ total: 1, caught: 0 });
-    expect(report.misses[0].leaked.length).toBeGreaterThan(0);
+    const samples = corpusFrom({ "a.txt": "=== s1\ntoken «apiKeys:npm_abcdefghijklmnopqrstuvwxyz0123456789»\n" });
+    const report = scoreCorpus(samples, undefined, redactsEvery("0123456789"));
+    expect(report.recallByCategory.apiKeys).toMatchObject({ total: 1, caught: 0, partial: 1 });
+    expect(report.misses[0].leaked).toBe("npmabcdefghijklmnopqrstuvwxyz");
   });
 
   it("counts redactions in benign text as false positives", () => {
     const samples = corpusFrom({ "benign-a.txt": "=== s1\nconst token = getToken();\n" });
-    const report = scoreCorpus(samples);
+    const report = scoreCorpus(samples, undefined, redactsEvery("getToken"));
     expect(report.falsePositives).toHaveLength(1);
     expect(report.overall.benignUnchanged).toBe(0);
   });
