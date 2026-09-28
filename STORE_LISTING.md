@@ -10,9 +10,13 @@ Redacts sensitive data locally before pasted text reaches supported AI chat webs
 
 ## Detailed Description
 
-SafePaste AI helps reduce accidental disclosure when copying text into supported AI chat websites. When you paste or drop text into a supported prompt box, the extension scans the pasted text locally in your browser and replaces detected sensitive values with typed placeholders such as `[[EMAIL_1]]`, `[[PERSON_1]]`, or `[[API_KEY_1]]`.
+SafePaste AI helps reduce accidental disclosure when copying text into supported AI chat websites. When you paste or drop text into a supported prompt box, the extension scans the pasted text locally in your browser and replaces detected sensitive values with typed placeholders such as `[[EMAIL_1]]`, `[[PHONE_1]]`, or `[[PERSON_1]]`.
 
-It uses local heuristic detection for common sensitive patterns including API keys, tokens, credentials, emails, phone numbers, government IDs, credit cards, IBANs, IP addresses, MAC addresses, street addresses, organization names, locations, and lightweight person-name matches. It is a safety layer, not a compliance guarantee.
+It uses local detection rules for common sensitive data: API keys and tokens (including the gitleaks rule set for more than 200 providers), passwords and credentials, emails, phone numbers, government IDs, credit cards, IBANs, IP and MAC addresses, street addresses, names, organizations and locations. If a paste cannot be checked, it is blocked instead of going through unredacted. Links that hide a token in pasted rich text are pasted as plain text.
+
+Optional enhanced name detection finds names the rules miss with a small AI model that runs entirely on your device (off by default; turning it on downloads the model once).
+
+SafePaste AI is a safety layer, not a compliance guarantee.
 
 The extension does not send pasted content to an external service and does not use remote AI APIs. Original sensitive values are not stored.
 
