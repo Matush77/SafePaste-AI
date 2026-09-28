@@ -107,7 +107,6 @@ const CHECKS = [
   },
   {
     name: "JSON config with a password field",
-    known: "Phase 2: quoted JSON keys are not detected yet",
     async run({ page, editor }) {
       const text = await pasteAndRead(page, editor, "{\n  \"user\": \"app_rw\",\n  \"password\": \"hunter2-Prod!\"\n}");
       assertNoLeak(text, ["hunter2-Prod!"]);
@@ -133,7 +132,11 @@ const CHECKS = [
   {
     name: "Undo removes the redacted paste",
     async run({ page, editor }) {
-      await pasteAndRead(page, editor, "mail jane.smith@example.com");
+      await clearEditor(page, editor);
+      // Rich editors (Quill, ProseMirror) merge edits made within about a
+      // second into one undo step; wait so undo only reverts the paste.
+      await page.waitForTimeout(1500);
+      await pasteAndRead(page, editor, "mail jane.smith@example.com", { clear: false });
       await page.keyboard.press(`${MOD}+Z`);
       await page.waitForTimeout(300);
       const text = await readEditor(editor);
