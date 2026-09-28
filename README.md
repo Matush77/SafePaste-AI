@@ -1,94 +1,90 @@
 # SafePaste AI
 
-Chrome MV3 extension that automatically redacts sensitive data when pasting into:
+Chrome MV3 extension that redacts sensitive data locally when you paste or drop text into:
 
 - `https://chatgpt.com/`
 - `https://gemini.google.com/app`
 - `https://claude.ai/`
 
-The extension runs locally in the browser. It does not call external APIs and does not store original sensitive values or redacted prompt text.
+Detection runs entirely in the browser. The extension makes no network requests and does not store original sensitive values or prompt text.
 
 SafePaste AI is independent and is not affiliated with the third-party AI chat services it supports.
 
-## What It Redacts
+## What it does
 
-- API keys, tokens, JWTs, private keys, and common secret assignments
-- Email addresses
-- Phone numbers
-- SSNs and similar government IDs
-- Credit cards with Luhn validation and IBANs
-- IP and MAC addresses
-- Street addresses
-- Lightweight NER-style matches for people, organizations, and locations
-- URLs when enabled in the popup
+When you paste or drop text into a supported prompt editor, the extension scans it and inserts a copy with sensitive values replaced by placeholders such as `[[EMAIL_1]]` or `[[PERSON_1]]`. Repeated values in the same paste get the same placeholder.
 
-Repeated values in the same paste receive stable placeholders such as `[[EMAIL_1]]` or `[[PERSON_1]]`.
+It detects API keys and tokens, credentials, email addresses, phone numbers, government IDs, card numbers and IBANs, IP and MAC addresses, street addresses, people, organisations and locations. URLs are optional.
 
-When redaction happens, the extension can show a short on-page confirmation with only the number of redacted items. This notice does not include prompt text or sensitive values and can be disabled in the popup.
+Safety behaviour:
 
-## Install Locally
+- Redaction is on from the first moment the page loads. A paste before settings load, or a failure to read settings, is still redacted.
+- If the redacted text cannot be inserted, the paste is blocked and a notice says so. The original never falls through.
+- Rich-text pastes whose links or attributes hide a sensitive value (for example a reset link carrying a token) are pasted as plain text.
+- Login, email, search and other non-prompt fields are never touched.
 
-1. Open Chrome and go to `chrome://extensions`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select the unpacked extension folder.
-5. Paste text into a supported AI chat editor. Sensitive data is replaced before the page receives it.
+This is a heuristic safety layer, not a compliance boundary. Current quality is measured by `npm run eval`, described below.
 
-## Smoke Test
+## Development
 
-Run the local redaction-engine sanity check:
+Requires Node 20 or newer.
 
-```powershell
-node tests/redactor-smoke.js
-node tests/redactor-scenarios.js
-node tests/contact-block.js
-node tests/site-adapters.js
-node tests/content-script-runtime.js
+```bash
+npm ci
+npm run build
 ```
 
-## Live Playwright QA
+Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select `dist/safepaste-ai`. Run `npm run watch` to rebuild on every change to `src/`, then reload the extension.
 
-The live QA runner opens Playwright Chromium with the unpacked extension loaded and tests the real prompt editors without submitting messages:
+### Layout
 
-```powershell
-npm run test:live
-```
+| Path | Contents |
+|---|---|
+| `src/redactor.js` | Detection and redaction. Pure functions, no browser APIs. |
+| `src/siteAdapters.js` | Supported sites, prompt-editor detection, text insertion. |
+| `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour. |
+| `src/contentScript.js` | Content-script entry point. |
+| `src/popup/popup.js` | Settings popup. |
+| `static/` | Manifest, popup HTML/CSS, privacy page, icons. Copied into the build as-is. |
+| `scripts/build.js` | Bundles `src/` with esbuild and validates and zips the package. |
+| `tests/unit/` | Unit tests (Vitest, with jsdom for DOM code). |
+| `tests/eval/` | Labelled evaluation corpus, scorer and quality baseline. |
+| `tests/fixtures/legacy/` | Benchmarks from before the evaluation corpus, kept as leak-regression checks. |
+| `tests/e2e/` | Loads the built extension in Chromium against local copies of the site editors. |
+| `tests/live/` | Manual QA against the real sites with your own logins. |
+| `tests/harness/` | Manual paste harness page. |
 
-If any site shows a login screen, sign in in the opened Chrome window and rerun the command.
+### Commands
 
-If Cloudflare blocks automation, use the assisted manual launcher instead:
+| Command | What it does |
+|---|---|
+| `npm run build` | Build the unpacked extension into `dist/safepaste-ai`. |
+| `npm run watch` | Rebuild on change. |
+| `npm run lint` | ESLint. |
+| `npm run typecheck` | Type-check `src/` from its JSDoc types (TypeScript in `checkJs` mode). |
+| `npm test` | Unit tests, legacy leak checks, and the redaction quality gate. |
+| `npm run test:e2e` | Real-browser test of the built extension. Run `npm run build` first. |
+| `npm run eval` | Print redaction quality: recall, precision, and false positives per category. Add `-- --verbose` to list every miss and false positive. |
+| `npm run eval:update-baseline` | Accept the current quality scores as the new baseline. |
+| `npm run check` | Everything above, as CI runs it. |
+| `npm run build:zip` | Build and write `dist/safepaste-ai-<version>.zip` for the Chrome Web Store. |
 
-```powershell
-.\scripts\package-extension.ps1
-npm run qa:live:open
-```
+## Measuring redaction quality
 
-Then complete [LIVE_SITE_QA.md](LIVE_SITE_QA.md) in the opened Playwright Chromium window.
+`tests/eval/corpus/` holds realistic prompts. Every sensitive value in them is labelled, and there is a separate set of harmless code, logs and prose that should come through unchanged. Labelling rules are in [tests/eval/GUIDELINES.md](tests/eval/GUIDELINES.md).
 
-## Package For Chrome Web Store
+`npm run eval` reports:
 
-Run the packaging script from this folder:
+- **Recall:** the share of labelled values that were fully redacted. Redacting half a token counts as a leak.
+- **Precision:** the share of redactions that hit something sensitive. False positives break code and prose and push users to turn the extension off.
+- **Benign samples unchanged:** the share of harmless samples pasted with no changes at all.
 
-```powershell
-.\scripts\package-extension.ps1
-```
+`tests/eval/baseline.json` stores the accepted scores, and `npm test` fails if any of them gets worse. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
 
-Upload the generated zip from `dist\safepaste-ai-1.0.2.zip` to the Chrome Web Store Developer Dashboard.
+## Release
 
-Before submitting, use [STORE_LISTING.md](STORE_LISTING.md) for the listing copy and permission justifications, host [privacy.html](privacy.html) as the public privacy policy page, and complete [LIVE_SITE_QA.md](LIVE_SITE_QA.md).
-
-## Browser Paste Harness
-
-For interactive paste testing, serve the repository and open the harness:
-
-```powershell
-python -m http.server 8765 --bind 127.0.0.1
-```
-
-Then open `http://127.0.0.1:8765/tests/paste-harness.html`.
-
-The harness includes 20 English prompt cases covering credentials, customer PII, finance, infrastructure logs, healthcare notes, HR documents, travel records, API tokens, banking data, legal records, vendor contracts, and benign technical text. Select a case, copy it, paste into the editor, and confirm the page reports `PASS`.
-
-## Notes
-
-This is a local heuristic redactor. It is useful as a safety layer, but it should not be treated as a compliance boundary. Review important prompts before sending them.
+1. Raise `version` in `static/manifest.json`. It is the only place the version is set.
+2. Run `npm run check`.
+3. Run `npm run build:zip`. It refuses to overwrite an existing zip for the same version.
+4. Complete [LIVE_SITE_QA.md](LIVE_SITE_QA.md) against the real sites.
+5. Follow [CHROME_STORE_CHECKLIST.md](CHROME_STORE_CHECKLIST.md).
