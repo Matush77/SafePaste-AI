@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SafePaste AI</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <div>
+            <h1>SafePaste AI</h1>
+            <p>Local paste redaction</p>
+          </div>
+        </div>
+        <label class="switch">
+          <input id="enabled" type="checkbox">
+          <span>Enabled</span>
+        </label>
+      </header>
+
+      <section>
+        <h2>Detect</h2>
+        <div id="categories" class="toggles"></div>
+      </section>
+
+      <section>
+        <h2>Placeholders</h2>
+        <label class="select-row">
+          <span>Style</span>
+          <select id="placeholderStyle">
+            <option value="typed">[[TYPE_1]]</option>
+            <option value="compact">[TYPE_1]</option>
+          </select>
+        </label>
+        <label class="select-row">
+          <span>Show redaction notice</span>
+          <input id="showToast" type="checkbox">
+        </label>
+      </section>
+
+      <section>
+        <h2>Last Redaction</h2>
+        <div id="lastRedaction" class="last">No redactions yet.</div>
+      </section>
+    </main>
+    <script src="src/redactor.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

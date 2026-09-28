@@ -1,0 +1,15 @@
+# Dependencies and build output
+node_modules/
+dist/
+test-results/
+
+# Local browser profile used by live QA (contains real site logins, never commit)
+.playwright-live-profile/
+
+# Editor and local-only files
+.idea/
+.vscode/
+conversation-transcript.html
+*.log
+.DS_Store
+Thumbs.db

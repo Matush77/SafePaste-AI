@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "node tests/redactor-smoke.js && node tests/redactor-scenarios.js && node tests/contact-block.js && node tests/public-contact-samples.js && node tests/site-adapters.js && node tests/content-script-runtime.js",
+    "test:benchmark": "node tests/redactor-unbiased-50.js",
+    "test:real-world": "node tests/real-world-public-100.js",
+    "test:scraped": "node tests/real-world-scraped-100.js",
+    "test:live": "node tests/live-playwright-qa.js",
+    "qa:live:open": "node tests/open-live-qa-browser.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}

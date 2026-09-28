@@ -1,0 +1,321 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-soft: #f8fafc;
+  --text: #101828;
+  --muted: #667085;
+  --line: #d8e0eb;
+  --line-strong: #b8c4d6;
+  --blue: #2563eb;
+  --blue-dark: #1d4ed8;
+  --green: #12805c;
+  --shadow: 0 18px 44px rgba(32, 43, 63, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 380px;
+  background:
+    radial-gradient(circle at 0 0, rgba(37, 99, 235, 0.08), transparent 30%),
+    var(--bg);
+  color: var(--text);
+}
+
+main {
+  width: 380px;
+  padding: 16px;
+}
+
+.app-header {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.brand {
+  align-items: center;
+  display: flex;
+  gap: 11px;
+  min-width: 0;
+}
+
+.brand-mark {
+  align-items: center;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 800;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+h1 {
+  font-size: 16px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.brand p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+  margin: 2px 0 0;
+}
+
+section {
+  margin-top: 16px;
+}
+
+h2 {
+  color: #344054;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.switch,
+.select-row,
+.toggle {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.switch {
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #344054;
+  cursor: pointer;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 5px 8px 5px 5px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.switch input {
+  appearance: none;
+  background: #cbd5e1;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 22px;
+  margin: 0;
+  position: relative;
+  transition: background 140ms ease;
+  width: 40px;
+}
+
+.switch input::after {
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.28);
+  content: "";
+  height: 18px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: transform 140ms ease;
+  width: 18px;
+}
+
+.switch input:checked {
+  background: var(--green);
+}
+
+.switch input:checked::after {
+  transform: translateX(18px);
+}
+
+.switch span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.toggles {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(32, 43, 63, 0.08);
+  overflow: hidden;
+}
+
+.toggle {
+  border-bottom: 1px solid #e7edf5;
+  cursor: pointer;
+  gap: 16px;
+  min-height: 46px;
+  padding: 10px 12px 10px 14px;
+  transition: background 120ms ease;
+}
+
+.toggle:last-child {
+  border-bottom: 0;
+}
+
+.toggle:hover {
+  background: #f8fbff;
+}
+
+.toggle span {
+  color: #182230;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.toggle input[type="checkbox"],
+.select-row input[type="checkbox"] {
+  appearance: none;
+  background: #ffffff;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  height: 20px;
+  margin: 0;
+  position: relative;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  width: 20px;
+}
+
+.toggle input[type="checkbox"]:checked,
+.select-row input[type="checkbox"]:checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.toggle input[type="checkbox"]:checked::after,
+.select-row input[type="checkbox"]:checked::after {
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  content: "";
+  height: 9px;
+  left: 6px;
+  position: absolute;
+  top: 3px;
+  transform: rotate(45deg);
+  width: 5px;
+}
+
+.switch input:focus-visible,
+.toggle input[type="checkbox"]:focus-visible,
+.select-row input[type="checkbox"]:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 2px;
+}
+
+.select-row {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(32, 43, 63, 0.06);
+  gap: 14px;
+  margin-bottom: 8px;
+  min-height: 50px;
+  padding: 10px 12px 10px 14px;
+}
+
+.select-row span {
+  color: #182230;
+  font-size: 13px;
+}
+
+select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, #475467 50%) calc(100% - 14px) 50% / 6px 6px no-repeat,
+    linear-gradient(135deg, #475467 50%, transparent 50%) calc(100% - 10px) 50% / 6px 6px no-repeat,
+    #ffffff;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  color: inherit;
+  font: inherit;
+  min-width: 116px;
+  padding: 7px 30px 7px 10px;
+}
+
+.last {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(32, 43, 63, 0.06);
+  color: #182230;
+  font-size: 13px;
+  line-height: 1.45;
+  min-height: 60px;
+  padding: 12px 14px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+@media (min-width: 760px) {
+  body {
+    min-height: 100vh;
+    min-width: 0;
+  }
+
+  main {
+    margin: 0 auto;
+    max-width: 460px;
+    padding: 28px 20px 36px;
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0f172a;
+    --panel: #111827;
+    --panel-soft: #172033;
+    --text: #e5e7eb;
+    --muted: #9aa4b2;
+    --line: #263244;
+    --line-strong: #405066;
+    --shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+  }
+
+  .toggle:hover {
+    background: #162033;
+  }
+
+  .toggle span,
+  .select-row span,
+  .last,
+  h1 {
+    color: #e5e7eb;
+  }
+
+  h2 {
+    color: #cbd5e1;
+  }
+
+  select,
+  .toggle input[type="checkbox"],
+  .select-row input[type="checkbox"] {
+    background-color: #111827;
+  }
+}
