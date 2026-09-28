@@ -4,7 +4,7 @@ SafePaste AI runs locally in the browser and does not transmit pasted content to
 
 ## Data Processed
 
-The extension reads plain text only when the user pastes into supported AI chat websites:
+The extension reads text only when the user pastes or drops it into the prompt editor of a supported AI chat website. For rich-text pastes it also reads the HTML version of the clipboard, to check links for hidden sensitive values. Supported websites:
 
 - `https://chatgpt.com/`
 - `https://gemini.google.com/`

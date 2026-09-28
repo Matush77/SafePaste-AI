@@ -1,0 +1,321 @@
+[
+  {
+    "id": "credentials",
+    "title": "Credential dump",
+    "expect": [
+      "OPENAI_API_KEY",
+      "GITHUB_TOKEN",
+      "SECRET",
+      "EMAIL"
+    ],
+    "text": "Please debug this production auth config:\nOPENAI_API_KEY=sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890\ngithub_token: ghp_abcdefghijklmnopqrstuvwxyz1234567890\npassword=hunter2!\nOwner email: admin@example.com",
+    "sensitive": [
+      "sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890",
+      "ghp_abcdefghijklmnopqrstuvwxyz1234567890",
+      "hunter2!",
+      "admin@example.com"
+    ]
+  },
+  {
+    "id": "customer-support-pii",
+    "title": "Customer-support PII",
+    "expect": [
+      "PERSON",
+      "EMAIL",
+      "PHONE",
+      "ADDRESS",
+      "LOCATION"
+    ],
+    "text": "Summarize this customer complaint from Dr. Jane Smith.\nContact jane.smith@example.com or +1 415-555-0199.\nShipping address is 123 Market Street, San Francisco, CA.",
+    "sensitive": [
+      "Dr. Jane Smith",
+      "jane.smith@example.com",
+      "+1 415-555-0199",
+      "123 Market Street",
+      "San Francisco, CA"
+    ]
+  },
+  {
+    "id": "finance-reimbursement",
+    "title": "Finance reimbursement",
+    "expect": [
+      "ORG",
+      "CREDIT_CARD",
+      "IBAN"
+    ],
+    "text": "Categorize this reimbursement for Acme Labs Inc.\nCorporate card: 4111 1111 1111 1111.\nVendor IBAN: DE89370400440532013000.",
+    "sensitive": [
+      "Acme Labs Inc.",
+      "4111 1111 1111 1111",
+      "DE89370400440532013000"
+    ]
+  },
+  {
+    "id": "infrastructure-log",
+    "title": "Infrastructure log",
+    "expect": [
+      "AWS_ACCESS_KEY",
+      "IP_ADDRESS",
+      "MAC_ADDRESS",
+      "JWT"
+    ],
+    "text": "Explain this failed deploy log.\nAWS key AKIAIOSFODNN7EXAMPLE called from 192.168.10.44.\nDevice 00:1A:2B:3C:4D:5E sent bearer token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.",
+    "sensitive": [
+      "AKIAIOSFODNN7EXAMPLE",
+      "192.168.10.44",
+      "00:1A:2B:3C:4D:5E",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    ]
+  },
+  {
+    "id": "healthcare-note",
+    "title": "Healthcare note",
+    "expect": [
+      "PERSON",
+      "SSN",
+      "LOCATION",
+      "EMAIL"
+    ],
+    "text": "Extract tasks from this intake note.\nPatient Maria Garcia has SSN 123-45-6789 and lives in Prague.\nFollow up at maria.garcia@example.org.",
+    "sensitive": [
+      "Maria Garcia",
+      "123-45-6789",
+      "Prague",
+      "maria.garcia@example.org"
+    ]
+  },
+  {
+    "id": "hr-onboarding",
+    "title": "HR onboarding",
+    "expect": [
+      "PERSON",
+      "TAX_ID",
+      "DRIVER_LICENSE",
+      "PHONE"
+    ],
+    "text": "Prepare an onboarding checklist for employee Noah Williams.\nThe contractor record lists EIN: 12-3456789 and driver license D12345678.\nCall (212) 555-0123 if payroll needs confirmation.",
+    "sensitive": [
+      "Noah Williams",
+      "EIN: 12-3456789",
+      "driver license D12345678",
+      "(212) 555-0123"
+    ]
+  },
+  {
+    "id": "travel-itinerary",
+    "title": "Travel itinerary",
+    "expect": [
+      "PERSON",
+      "PASSPORT",
+      "LOCATION",
+      "EMAIL"
+    ],
+    "text": "Create a concise trip plan for Priya Shah.\nHer passport number P12345678 is in the booking notes.\nDestination is Singapore and the contact email is priya.shah@example.net.",
+    "sensitive": [
+      "Priya Shah",
+      "passport number P12345678",
+      "Singapore",
+      "priya.shah@example.net"
+    ]
+  },
+  {
+    "id": "stripe-webhook",
+    "title": "Stripe webhook config",
+    "expect": [
+      "STRIPE_SECRET_KEY",
+      "SECRET",
+      "URL"
+    ],
+    "text": "Review this webhook setup before deployment.\nSTRIPE_SECRET_KEY=sk_live_abcdefghijklmnopqrstuvwxyz123456\nwebhook_secret=whsec_1234567890abcdef\nEndpoint: https://billing.example.com/webhooks/stripe",
+    "sensitive": [
+      "sk_live_abcdefghijklmnopqrstuvwxyz123456",
+      "whsec_1234567890abcdef",
+      "https://billing.example.com/webhooks/stripe"
+    ]
+  },
+  {
+    "id": "google-maps-config",
+    "title": "Google Maps config",
+    "expect": [
+      "GOOGLE_API_KEY",
+      "URL",
+      "LOCATION"
+    ],
+    "text": "Help debug map loading in Berlin.\nGoogle key: AIzaSyA1234567890abcdefghijklmnopqrstuv\nInternal page: https://maps.example.com/internal",
+    "sensitive": [
+      "AIzaSyA1234567890abcdefghijklmnopqrstuv",
+      "https://maps.example.com/internal",
+      "Berlin"
+    ]
+  },
+  {
+    "id": "slack-incident",
+    "title": "Slack incident",
+    "expect": [
+      "SLACK_TOKEN",
+      "IP_ADDRESS",
+      "URL"
+    ],
+    "text": "Draft an incident update for the on-call team.\nSlack bot token xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx posted from 10.0.4.22.\nStatus page: https://status.example.com/incidents/42",
+    "sensitive": [
+      "xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx",
+      "10.0.4.22",
+      "https://status.example.com/incidents/42"
+    ]
+  },
+  {
+    "id": "bank-transfer",
+    "title": "Bank transfer",
+    "expect": [
+      "PERSON",
+      "ORG",
+      "BANK_ACCOUNT",
+      "ROUTING_NUMBER"
+    ],
+    "text": "Summarize the wire transfer request for Liam Johnson.\nBeneficiary bank is North Star Bank.\nUse account number 123456789012 and routing number 021000021.",
+    "sensitive": [
+      "Liam Johnson",
+      "North Star Bank",
+      "account number 123456789012",
+      "routing number 021000021"
+    ]
+  },
+  {
+    "id": "sales-crm",
+    "title": "Sales CRM note",
+    "expect": [
+      "PERSON",
+      "ORG",
+      "EMAIL",
+      "PHONE"
+    ],
+    "text": "Turn this CRM note into next steps.\nCustomer Chloe Brown at Nimbus Corporation asked for pricing.\nReach her at chloe.brown@nimbus.example or 617-555-0188.",
+    "sensitive": [
+      "Chloe Brown",
+      "Nimbus Corporation",
+      "chloe.brown@nimbus.example",
+      "617-555-0188"
+    ]
+  },
+  {
+    "id": "legal-review",
+    "title": "Legal review",
+    "expect": [
+      "PERSON",
+      "ORG",
+      "PASSPORT",
+      "LOCATION"
+    ],
+    "text": "Extract legal obligations from this memo.\nSigner Omar Hassan represents Evergreen Foundation.\nThe memo references passport no. K87654321 and a London office.",
+    "sensitive": [
+      "Omar Hassan",
+      "Evergreen Foundation",
+      "passport no. K87654321",
+      "London"
+    ]
+  },
+  {
+    "id": "database-connection",
+    "title": "Database connection",
+    "expect": [
+      "SECRET",
+      "IP_ADDRESS",
+      "URL"
+    ],
+    "text": "Explain why this database login fails.\nhost=172.16.0.19 password=dbPassword987\nAdmin console: https://admin.example.com/db",
+    "sensitive": [
+      "dbPassword987",
+      "172.16.0.19",
+      "https://admin.example.com/db"
+    ]
+  },
+  {
+    "id": "bearer-token",
+    "title": "Bearer token request",
+    "expect": [
+      "BEARER_TOKEN",
+      "EMAIL"
+    ],
+    "text": "Rewrite this API support ticket.\nAuthorization: Bearer mF_9.B5f-4.1JqM0123456789abcdefghijklmnopqrstuvwxyz\nEscalate to security@example.com.",
+    "sensitive": [
+      "Bearer mF_9.B5f-4.1JqM0123456789abcdefghijklmnopqrstuvwxyz",
+      "security@example.com"
+    ]
+  },
+  {
+    "id": "university-research",
+    "title": "University research",
+    "expect": [
+      "PERSON",
+      "ORG",
+      "EMAIL",
+      "LOCATION"
+    ],
+    "text": "Summarize the research collaboration.\nProf. Alice Chen from Pacific University is coordinating from Tokyo.\nHer email is alice.chen@pacific.example.",
+    "sensitive": [
+      "Prof. Alice Chen",
+      "Pacific University",
+      "alice.chen@pacific.example",
+      "Tokyo"
+    ]
+  },
+  {
+    "id": "insurance-claim",
+    "title": "Insurance claim",
+    "expect": [
+      "PERSON",
+      "PHONE",
+      "ADDRESS",
+      "DRIVER_LICENSE"
+    ],
+    "text": "Create an insurance claim summary for Ethan Miller.\nPhone: 303-555-0110.\nLoss address: 88 Pine Road.\nDriver details include DL M76543210.",
+    "sensitive": [
+      "Ethan Miller",
+      "303-555-0110",
+      "88 Pine Road",
+      "DL M76543210"
+    ]
+  },
+  {
+    "id": "vendor-contract",
+    "title": "Vendor contract",
+    "expect": [
+      "ORG",
+      "TAX_ID",
+      "EMAIL",
+      "URL"
+    ],
+    "text": "Review this vendor contract summary.\nVendor: Blue River LLC, Tax ID 98-7654321.\nContact contracts@blueriver.example and portal https://contracts.example.com/blue-river.",
+    "sensitive": [
+      "Blue River LLC",
+      "Tax ID 98-7654321",
+      "contracts@blueriver.example",
+      "https://contracts.example.com/blue-river"
+    ]
+  },
+  {
+    "id": "multi-person-message",
+    "title": "Multi-person message",
+    "expect": [
+      "PERSON",
+      "EMAIL",
+      "PHONE",
+      "LOCATION"
+    ],
+    "text": "Draft a neutral message for Maya Patel and Derek Wilson.\nMaya uses maya.patel@example.com and 555-555-0101.\nBoth will meet in Austin next week.",
+    "sensitive": [
+      "Maya Patel",
+      "Derek Wilson",
+      "maya.patel@example.com",
+      "555-555-0101",
+      "Austin"
+    ]
+  },
+  {
+    "id": "benign-technical",
+    "title": "Benign technical prompt",
+    "expect": [],
+    "text": "Explain how to debounce a text input in React.\nUse a short example and mention cleanup in useEffect.",
+    "sensitive": []
+  }
+]

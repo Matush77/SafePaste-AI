@@ -2,34 +2,22 @@
 
 ## Package
 
-- Upload `dist/safepaste-ai-1.0.2.zip`.
-- Confirm `manifest.json` is at the zip root.
-- Increment `version` in `manifest.json` before every resubmission with code or manifest changes.
+- Raise `version` in `static/manifest.json` before every resubmission with code or manifest changes.
+- Run `npm run check`. Lint, type checks, unit tests, the redaction quality gate and the end-to-end browser test must all pass.
+- Run `npm run build:zip` and upload `dist/safepaste-ai-<version>.zip`. `manifest.json` is at the zip root.
 
 ## Listing
 
 - Use `STORE_LISTING.md` for the name, short description, detailed description, single-purpose statement, and permission justifications.
-- Add Chrome Web Store screenshots and promotional images in the Developer Dashboard.
+- Add Chrome Web Store screenshots and promotional images from `store-assets/` in the Developer Dashboard.
 - Choose the most appropriate category and distribution visibility.
 
 ## Privacy
 
-- Use `PRIVACY.md` as the privacy policy source.
+- Use `PRIVACY.md` as the privacy policy source; `static/privacy.html` is the hosted version.
 - In the Privacy practices tab, disclose that pasted text is processed locally and not transmitted.
 - Confirm that the extension does not sell, transfer, or remotely process user data.
 - Confirm that the extension stores only settings and redaction-count summaries, not prompt text.
-
-## Final QA
-
-```powershell
-node tests/redactor-smoke.js
-node tests/redactor-scenarios.js
-node tests/contact-block.js
-node tests/site-adapters.js
-node tests/content-script-runtime.js
-.\scripts\package-extension.ps1
-npm run qa:live:open
-```
 
 ## Live Site QA
 

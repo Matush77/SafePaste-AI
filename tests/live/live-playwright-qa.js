@@ -1,11 +1,14 @@
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const { chromium } = require("playwright");
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { chromium } from "playwright";
 
-const root = path.resolve(__dirname, "..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const extensionPath = path.join(root, "dist", "safepaste-ai");
-const profileDir = path.join(root, ".playwright-live-profile");
+// Kept outside the repository: it holds real logins to the AI sites.
+const profileDir = process.env.SAFEPASTE_QA_PROFILE || path.join(os.homedir(), ".safepaste-ai", "playwright-profile");
 const outputDir = path.join(root, "test-results", "live-playwright");
 
 const SAMPLE = [
@@ -69,8 +72,8 @@ main().catch((error) => {
 
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
+  assert.equal(fs.existsSync(path.join(extensionPath, "manifest.json")), true, "Run npm run build before live QA");
   validatePackageInputs();
-  assert.equal(fs.existsSync(path.join(extensionPath, "manifest.json")), true, "Run .\\scripts\\package-extension.ps1 before live QA");
 
   const browser = await chromium.launchPersistentContext(profileDir, {
     headless: false,

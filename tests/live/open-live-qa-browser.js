@@ -1,12 +1,15 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const readline = require("node:readline/promises");
-const { stdin: input, stdout: output } = require("node:process");
-const { chromium } = require("playwright");
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import readline from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
+import { chromium } from "playwright";
 
-const root = path.resolve(__dirname, "..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const extensionPath = path.join(root, "dist", "safepaste-ai");
-const profileDir = path.join(root, ".playwright-live-profile");
+// Kept outside the repository: it holds real logins to the AI sites.
+const profileDir = process.env.SAFEPASTE_QA_PROFILE || path.join(os.homedir(), ".safepaste-ai", "playwright-profile");
 const qaPath = path.join(root, "LIVE_SITE_QA.md");
 
 const urls = [
@@ -22,7 +25,7 @@ main().catch((error) => {
 
 async function main() {
   if (!fs.existsSync(path.join(extensionPath, "manifest.json"))) {
-    throw new Error("Packaged extension not found. Run .\\scripts\\package-extension.ps1 first.");
+    throw new Error("Built extension not found. Run npm run build first.");
   }
 
   const context = await chromium.launchPersistentContext(profileDir, {

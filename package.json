@@ -1,14 +1,38 @@
 {
+  "name": "safepaste-ai",
   "private": true,
+  "type": "module",
+  "description": "Chrome extension that redacts sensitive data locally before pasted text reaches AI chat websites.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "node tests/redactor-smoke.js && node tests/redactor-scenarios.js && node tests/contact-block.js && node tests/public-contact-samples.js && node tests/site-adapters.js && node tests/content-script-runtime.js",
-    "test:benchmark": "node tests/redactor-unbiased-50.js",
-    "test:real-world": "node tests/real-world-public-100.js",
-    "test:scraped": "node tests/real-world-scraped-100.js",
-    "test:live": "node tests/live-playwright-qa.js",
-    "qa:live:open": "node tests/open-live-qa-browser.js"
+    "build": "node scripts/build.js",
+    "build:zip": "node scripts/build.js --zip",
+    "build:harness": "node scripts/build.js --harness",
+    "watch": "node scripts/build.js --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc -p jsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "node tests/e2e/extension.e2e.js",
+    "eval": "node tests/eval/run.js",
+    "eval:update-baseline": "node tests/eval/run.js --update-baseline",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e",
+    "test:live": "node tests/live/live-playwright-qa.js",
+    "qa:live:open": "node tests/live/open-live-qa-browser.js"
   },
   "devDependencies": {
-    "playwright": "^1.60.0"
+    "@eslint/js": "^10.0.1",
+    "@types/chrome": "^0.3.0",
+    "@types/node": "^26.6.3",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.11.0",
+    "fflate": "^0.8.3",
+    "globals": "^17.12.0",
+    "jsdom": "^30.1.1",
+    "playwright": "^1.63.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
   }
 }

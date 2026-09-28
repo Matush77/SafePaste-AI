@@ -1,0 +1,655 @@
+{
+  "note": "Snapshot of contact values scraped on 2026-09-28 from public institutional contact pages by the old tests/real-world-scraped-100.js. Candidates were found with regexes, so this set only covers formats regexes already recognise.",
+  "sources": [
+    {
+      "url": "https://www.mit.edu/contact",
+      "status": 200
+    },
+    {
+      "url": "https://isn.mit.edu/contact-isn",
+      "status": 200
+    },
+    {
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.ndsu.edu/international/about/contact_us",
+      "status": 200
+    },
+    {
+      "url": "https://www.paloalto.gov/About/Contact-Us",
+      "status": 200
+    },
+    {
+      "url": "https://global.iu.edu/about/contact/index.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.uow.edu.au/about/contacts/",
+      "status": 200
+    },
+    {
+      "url": "https://www.propublica.org/contact",
+      "status": 200
+    },
+    {
+      "url": "https://www.northwestu.edu/international/contact",
+      "status": 200
+    },
+    {
+      "url": "https://www.cityofmadison.com/contact",
+      "status": 200
+    },
+    {
+      "url": "https://www.who.int/about/contact-us",
+      "status": 200
+    },
+    {
+      "url": "https://www.sfu.ca/contact.html",
+      "status": 200
+    }
+  ],
+  "candidates": [
+    {
+      "type": "email",
+      "value": "admissions@mit.edu",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "email",
+      "value": "aacomments@mit.edu",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "email",
+      "value": "campus-map@mit.edu",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "phone",
+      "value": "617-253-1000",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Massachusetts Avenue Cambridge, MA 02139",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "street_address",
+      "value": "77 Massachusetts Avenue",
+      "url": "https://www.mit.edu/contact"
+    },
+    {
+      "type": "email",
+      "value": "fhadley@mit.edu",
+      "url": "https://isn.mit.edu/contact-isn"
+    },
+    {
+      "type": "email",
+      "value": "isn@mit.edu",
+      "url": "https://isn.mit.edu/contact-isn"
+    },
+    {
+      "type": "phone",
+      "value": "617.324.4700",
+      "url": "https://isn.mit.edu/contact-isn"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Cambridge, MA 02139",
+      "url": "https://isn.mit.edu/contact-isn"
+    },
+    {
+      "type": "street_address",
+      "value": "500 Technology Square",
+      "url": "https://isn.mit.edu/contact-isn"
+    },
+    {
+      "type": "email",
+      "value": "international.recruitment@lamar.edu",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "email",
+      "value": "luadmtran@lamar.edu",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "email",
+      "value": "admissions@lamar.edu",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "email",
+      "value": "gradmissions@lamar.edu",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "email",
+      "value": "internationaladmissions@lamar.edu",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "phone",
+      "value": "+1 (409) 790-4768",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "phone",
+      "value": "+1 (409) 880-2333",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "phone",
+      "value": "710 (409) 880-7011",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "po_box",
+      "value": "P.O. Box 10009",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Redbird Lane Beaumont, TX 77710",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "street_address",
+      "value": "211 Redbird Lane",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "street_address",
+      "value": "4400 MLK Blvd",
+      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+    },
+    {
+      "type": "email",
+      "value": "NDSU.iss@ndsu.edu",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "email",
+      "value": "ndsu.studyabroad@ndsu.edu",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "email",
+      "value": "NDSU.intl.admissions@ndsu.edu",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "email",
+      "value": "NDSU.International@ndsu.edu",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "phone",
+      "value": "701-231-7895",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "phone",
+      "value": "(701) 231-7895",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "po_box",
+      "value": "P.O. Box 6050",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Fargo, ND 58108",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Fargo, ND 58102",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "street_address",
+      "value": "1401 Administration Ave",
+      "url": "https://www.ndsu.edu/international/about/contact_us"
+    },
+    {
+      "type": "email",
+      "value": "adminsvcs@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "enjoyonline@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "parks@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "fire@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "HR@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "OfficeOfTheCIO@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "pa.library@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "OES@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "planner@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "building@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "pd@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "pwd@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "UtilitiesCustomerService@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "citymgr@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "city.attorney@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "city.auditor@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "city.clerk@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "city.council@paloalto.gov",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "phone",
+      "value": "(650) 329-2100",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Palo Alto, CA 94301",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Hamilton Avenue Palo Alto, CA 94301",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "street_address",
+      "value": "250 Hamilton Ave",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "street_address",
+      "value": "250 Hamilton Avenue",
+      "url": "https://www.paloalto.gov/About/Contact-Us"
+    },
+    {
+      "type": "email",
+      "value": "ois@iu.edu",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "email",
+      "value": "newtoiu@iu.edu",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "email",
+      "value": "edabroad@iu.edu",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "812-855-8669",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "812-856-1328",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "317-274-7000",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "317-278-2213",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "812-855-9086",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "812-855-4418",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "812-855-9304",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "(812) 856-5523",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "phone",
+      "value": "(812) 855-6660",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "N Eagleson Ave Bloomington, IN 47405",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "W. New York Street Indianapolis, IN 46202",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "street_address",
+      "value": "330 N Eagleson Ave",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "street_address",
+      "value": "902 W. New York Street",
+      "url": "https://global.iu.edu/about/contact/index.html"
+    },
+    {
+      "type": "email",
+      "value": "support-wellbeing@uow.edu.au",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 3218",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 3927",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 3555",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 3386",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 4227",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 4221 5115",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "international_phone",
+      "value": "+61 2 9266 1300",
+      "url": "https://www.uow.edu.au/about/contacts/"
+    },
+    {
+      "type": "phone",
+      "value": "212-514-5250",
+      "url": "https://www.propublica.org/contact"
+    },
+    {
+      "type": "phone",
+      "value": "708-967-5720",
+      "url": "https://www.propublica.org/contact"
+    },
+    {
+      "type": "phone",
+      "value": "917-512-0252",
+      "url": "https://www.propublica.org/contact"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Floor New York, NY 10013",
+      "url": "https://www.propublica.org/contact"
+    },
+    {
+      "type": "email",
+      "value": "international@northwestu.edu",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "email",
+      "value": "skye.cornell@northwestu.edu",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "email",
+      "value": "cele@northwestu.edu",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "email",
+      "value": "davis.gibson@northwestu.edu",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "email",
+      "value": "info@northwestu.edu",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "phone",
+      "value": "425-889-6280",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "phone",
+      "value": "425-889-5363",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "phone",
+      "value": "425-822-8266",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Ave. NE Kirkland, WA 98033",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "city_state_zip",
+      "value": "Ave. N.E. Kirkland, WA 98033",
+      "url": "https://www.northwestu.edu/international/contact"
+    },
+    {
+      "type": "email",
+      "value": "madisonmayor@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "voting@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "licensing@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "mymetrobus@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "parking@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "assessor@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "treasurer@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "streets@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "traffic@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "attorney@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "bldginspect@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "dcr@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "clerk@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "cdd@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "engineering@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "finance@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "fleet@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "housing@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "hr@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "it@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "library@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "seniorcenter@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "mononaterrace@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "planning@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "health@publichealthmdc.com",
+      "url": "https://www.cityofmadison.com/contact"
+    },
+    {
+      "type": "email",
+      "value": "publicworks@cityofmadison.com",
+      "url": "https://www.cityofmadison.com/contact"
+    }
+  ]
+}
