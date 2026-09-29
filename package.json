@@ -9,6 +9,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "build:zip": "node scripts/build.js --zip",
+    "assets": "node scripts/store-assets.js",
     "build:harness": "node scripts/build.js --harness",
     "watch": "node scripts/build.js --watch",
     "lint": "eslint .",

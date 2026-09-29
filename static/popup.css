@@ -53,16 +53,10 @@ main {
 }
 
 .brand-mark {
-  align-items: center;
-  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-  border-radius: 8px;
-  color: #ffffff;
-  display: inline-flex;
+  border-radius: 9px;
+  display: block;
   flex: 0 0 auto;
-  font-size: 18px;
-  font-weight: 800;
   height: 36px;
-  justify-content: center;
   width: 36px;
 }
 

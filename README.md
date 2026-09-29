@@ -84,6 +84,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `npm run eval:external` | Score on public PII datasets (Nemotron-PII, Gretel). Downloads them to `.cache/` on first run. `-- --verbose` lists misses on the development set; `-- --test` prints totals for the untouched test set. |
 | `npm run check` | Everything above, as CI runs it. |
 | `npm run build:zip` | Build and write `dist/safepaste-ai-<version>.zip` for the Chrome Web Store. |
+| `npm run assets` | Render the icons and Chrome Web Store images from `store-assets/brand/` and the built extension (run `npm run build` first). |
 
 ## Measuring redaction quality
 

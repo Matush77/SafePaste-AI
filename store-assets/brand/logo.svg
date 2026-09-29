@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- SafePaste AI mark: a clipboard whose middle line is redacted, checked.
+       The tile spans 16-112 so the 128 px store icon has Chrome's 16 px
+       padding; crop the viewBox to "16 16 96 96" for toolbar sizes. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A3FB5"/>
+      <stop offset="1" stop-color="#262A80"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="96" height="96" rx="22" fill="url(#tile)"/>
+  <rect x="38" y="36" width="52" height="62" rx="8" fill="#FFFFFF"/>
+  <rect x="51" y="29" width="26" height="13" rx="4" fill="#2E3192" stroke="#FFFFFF" stroke-width="4"/>
+  <rect x="46" y="52" width="36" height="6" rx="3" fill="#C7CBEE"/>
+  <rect x="46" y="63" width="36" height="12" rx="3" fill="#2E3192"/>
+  <rect x="46" y="81" width="22" height="6" rx="3" fill="#C7CBEE"/>
+  <circle cx="88" cy="92" r="13" fill="#34D399" stroke="#262A80" stroke-width="4"/>
+  <path d="M82 92 l4.5 4.5 l8 -9" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

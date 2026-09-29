@@ -25,8 +25,9 @@ export default [
     }
   },
   {
-    // Unit tests run DOM code under jsdom; e2e and live tests run code inside the page.
-    files: ["tests/unit/**/*.js", "tests/e2e/**/*.js", "tests/live/**/*.js"],
+    // Unit tests run DOM code under jsdom; e2e and live tests and the store
+    // image script run code inside the page.
+    files: ["tests/unit/**/*.js", "tests/e2e/**/*.js", "tests/live/**/*.js", "scripts/store-assets.js"],
     languageOptions: {
       globals: { ...globals.browser, chrome: "readonly" }
     }
