@@ -1,15 +1,15 @@
 {
   "overall": {
-    "recall": 0.7379,
-    "precision": 0.8621,
-    "f1": 0.7952,
-    "leakedCharRate": 0.159,
+    "recall": 0.7476,
+    "precision": 0.8636,
+    "f1": 0.8014,
+    "leakedCharRate": 0.1412,
     "benignUnchanged": 0.7647
   },
   "recallByCategory": {
     "addresses": 1,
     "apiKeys": 1,
-    "credentials": 0.6923,
+    "credentials": 0.7692,
     "emails": 1,
     "financial": 1,
     "governmentIds": 1,
@@ -37,6 +37,6 @@
     "labelled": 38,
     "benign": 34,
     "goldSpans": 103,
-    "predictions": 87
+    "predictions": 88
   }
 }

@@ -185,3 +185,68 @@ describe("overlaps and settings", () => {
     check("Dear Anneke, mail anneke@example.com", { settings, kept: ["Anneke,"], gone: ["anneke@example.com"] });
   });
 });
+
+describe("labelled fields", () => {
+  it("reads Markdown fields, several to a line, and keeps the labels", () => {
+    check("**Employee ID:** K3509261 **Date of Birth:** 1956-02-11 **Status:** active", {
+      gone: ["K3509261", "1956-02-11"],
+      kept: ["Employee ID", "Date of Birth", "active"]
+    });
+    check("- First Name: Louise - Last Name: Clay - Occupation: stocker", { gone: ["Louise", "Clay"], kept: ["First Name", "Last Name", "stocker"] });
+    check("Customer note, License Plate: H02-3755-253, Medical Record Number (for reference): MRN-450486", {
+      gone: ["H02-3755-253", "MRN-450486"],
+      kept: ["License Plate", "Medical Record Number"]
+    });
+  });
+
+  it("reads two-column label | value tables without taking labels for names", () => {
+    const table = "| Field | Value |\n| --- | --- |\n| Last Name | Holden |\n| Email | ryan.holden15@gmail.com |\n| Employee ID | 23-58291 |\n| Employment Status | part-time |";
+    check(table, { gone: ["Holden", "ryan.holden15", "23-58291"], kept: ["Last Name", "Email", "Employee ID", "Employment Status", "part-time"] });
+  });
+
+  it("still reads header tables", () => {
+    check("Name,Phone,Plan\nJane Doe,415-555-0133,Gold", { gone: ["Jane Doe", "415-555-0133"], kept: ["Name,Phone,Plan", "Gold"] });
+  });
+
+  it("finds values after label phrases in running text, including lists", () => {
+    check("The account number associated with this customer is C387265419 and it is active.", { gone: ["C387265419"], kept: ["active"] });
+    check("Employee IDs P9779023 and J-175274-E are linked to the incident.", { gone: ["P9779023", "J-175274-E"] });
+    check("Subjects were born on 1960-11-14 and 1975-04-21.", { gone: ["1960-11-14", "1975-04-21"] });
+    check("Our swift bic is BKLMUSR7GT5 for transfers; pay with a CVV of 486 and a PIN of 9283.", { gone: ["BKLMUSR7GT5", "486", "9283"] });
+    check("He will use the password River$Flow2025 to log in.", { gone: ["River$Flow2025"] });
+  });
+
+  it("does not take ordinary words after label phrases as values", () => {
+    const text = [
+      "Reset your password via the link we sent.",
+      "The account number field must have 10 digits.",
+      "Pin the message to the channel.",
+      "Claim #CL-2024-77812 was filed.",
+      "The password policy requires 12 characters."
+    ].join("\n");
+    expect(redact(text).text).toBe(text);
+  });
+
+  it("does not take roles in greetings or generic headings for names and companies", () => {
+    const text = "Dear Tenant,\nDear Vehicle Owner,\n### Access Control Systems\n**Travel Health** Insurance Claim Form";
+    expect(redact(text).text).toBe(text);
+  });
+});
+
+describe("record numbers, cards and places", () => {
+  it("redacts prefixed record numbers without a label", () => {
+    check("Upon review of patient record MRN-505536 and driver EMP730359.", { gone: ["MRN-505536", "EMP730359"] });
+  });
+
+  it("redacts card-shaped numbers that fail the checksum when card words are near", () => {
+    check("Payments use the credit debit card 5490 3479 1287 6543.", { gone: ["5490 3479 1287 6543"] });
+    check("Batch 5490 3479 1287 6543 shipped.", { kept: ["5490 3479 1287 6543"] });
+  });
+
+  it("counts county names and less common street suffixes only near other personal data", () => {
+    check("Jane Smith (jane@example.com) lives in Knox County.", { gone: ["Knox County"] });
+    check("Knox County election results are due Friday.", { kept: ["Knox County"] });
+    check("Ship to 07570 Joanna Mountains, 67789, South Barbaraton, attention Jane Smith.", { gone: ["Joanna Mountains", "67789", "South Barbaraton"] });
+    check("Here are 5 Key Points to remember.", { kept: ["5 Key Points"] });
+  });
+});

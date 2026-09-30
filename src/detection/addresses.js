@@ -14,7 +14,11 @@ const PARTICLE = "(?:de|del|de la|da|das|do|dos|des|di|du|della|la|le|van|von|de
 const STREET_SUFFIX = "(?:Street|St\\.?|Avenue|Ave\\.?|Road|Rd\\.?|Boulevard|Blvd\\.?|Lane|Ln\\.?|Drive|Dr\\.?|Court|Ct\\.?|Way|Place|Pl\\.?|Terrace|Close|Crescent|Cres\\.?|Square|Sq\\.?|Parkway|Pkwy\\.?|Circle|Cir\\.?|Highway|Hwy\\.?|Row|Walk|Mall|Plaza|Trail|Alley|Loop|Gardens|Grove|Mews)";
 // Lowercase text only counts with an unambiguous street word.
 const STREET_SUFFIX_LOWER = "(?:street|st|avenue|ave|road|rd|boulevard|blvd|lane|ln|drive|dr|court|ct|terrace|parkway|pkwy|highway|hwy)";
-const UNIT = `(?:,?${H}*(?:Apt|Apartment|Suite|Ste|Unit|Flat|Floor|Fl|Room|Rm|Bldg|Building)\\.?${H}*#?[A-Za-z0-9-]+|${H}+#[A-Za-z0-9-]+)`;
+// The rest of the USPS street suffixes (Publication 28), plus Indian "Nagar"
+// and "Marg". Many are everyday words ("5 Key Points"), so an address ending
+// in one only counts next to other personal data.
+const WEAK_STREET_SUFFIX = "(?:Annex|Arcade|Bayou|Beach|Bend|Bluffs?|Bottom|Branch|Bridge|Brooks?|Burgs?|Bypass|Camp|Canyon|Cape|Causeway|Centers?|Circles|Cliffs?|Club|Commons?|Corners?|Course|Courts|Coves?|Creek|Crest|Crossing|Crossroads?|Curve|Dale|Dam|Divide|Drives|Estates?|Expressway|Extensions?|Falls?|Ferry|Fields?|Flats?|Fords?|Forest|Forges?|Forks?|Fort|Freeway|Gateway|Glens?|Greens?|Groves|Harbou?rs?|Haven|Heights|Hills?|Hollow|Inlet|Islands?|Isle|Junctions?|Keys?|Knolls?|Lakes?|Landing|Lights?|Locks?|Lodge|Manors?|Meadows?|Mills?|Mission|Motorway|Mount|Mountains?|Neck|Orchard|Oval|Overpass|Parks?|Pass|Passage|Path|Pike|Pines?|Plains?|Points?|Ports?|Prairie|Ranch|Rapids?|Ridges?|River|Roads|Route|Run|Shoals?|Shores?|Skyway|Springs?|Spurs?|Squares|Station|Stravenue|Stream|Streets|Summit|Throughway|Trace|Track|Trafficway|Tunnel|Turnpike|Underpass|Unions?|Valleys?|Via|Viaduct|Views?|Villages?|Ville|Vista|Walks|Wall|Ways|Wells?|Block|Nagar|Marg)";
+const UNIT =`(?:,?${H}*(?:Apt|Apartment|Suite|Ste|Unit|Flat|Floor|Fl|Room|Rm|Bldg|Building)\\.?${H}*#?[A-Za-z0-9-]+|${H}+#[A-Za-z0-9-]+)`;
 const DIRECTION = `(?:${H}+(?:N|S|E|W|NE|NW|SE|SW|N\\.E\\.|N\\.W\\.|S\\.E\\.|S\\.W\\.)\\b)`;
 const EU_STREET_WORD = "(?:Calle|Carrer|Avenida|Av\\.|Avda\\.?|Rua|Rue|Via|Viale|Corso|Piazza|Piazzale|Largo|Boulevard|Bd\\.?|Chemin|Allée|Impasse|Quai|Place|Plac|ulica|ul\\.|Ulica|náměstí|námestie|nám\\.|třída|trieda|utca|út|tér|Straße|Strasse|Platz)";
 const EU_COMPOUND_SUFFIX = "(?:straße|strasse|str\\.|weg|gasse|allee|platz|ring|damm|ufer|chaussee|straat|gracht|laan|plein|kade|vej|gade|gatan|gata|vägen|veien|gate|utca|ulice|ulica|ova|ská|ého)";
@@ -55,6 +59,9 @@ const PATTERNS = [
   [new RegExp(`\\b[A-Z]{2}${H}+\\d{5}-\\d{3}\\b`, "g"), "medium"]
 ];
 
+// "07570 Joanna Mountains", "5 Laura Block", "59565 Silva Prairie".
+const WEAK_STREET = new RegExp(`(?<![\\w-])\\d{1,6}[A-Za-z]?${H}+(?:${WORD}${H}+){1,3}${WEAK_STREET_SUFFIX}(?![\\p{L}\\d])${UNIT}?`, "gu");
+
 // Postcode then town, at the start of a line or after a comma:
 // "10435 Berlin", "75004 Paris", "1100-418 Lisboa", "811 01 Bratislava".
 const POSTCODE_TOWN = new RegExp(`(?:^|(?<=,${H}*)|(?<=\\n${H}*))(\\d{4}${H}?[A-Z]{2}|\\d{4,5}|\\d{4}-\\d{3}|\\d{3}${H}\\d{2}|\\d{2}-\\d{3})${H}+(\\p{Lu}[\\p{Ll}'’-]{1,30}(?:(?:-|${H})\\p{Lu}[\\p{Ll}'’-]{1,30}){0,2})(?=$|[,.;)\\n]|${H}*$)`, "gmu");
@@ -78,6 +85,13 @@ export function detectAddresses(text) {
     }
   }
 
+  for (const match of text.matchAll(WEAK_STREET)) {
+    const index = /** @type {number} */ (match.index);
+    if (!isLikelyYear(match[0])) {
+      out.add(index, index + match[0].length, "ADDRESS", "addresses", "low", true);
+    }
+  }
+
   for (const regex of [POSTCODE_TOWN, TOWN_POSTCODE]) {
     for (const match of text.matchAll(regex)) {
       const index = /** @type {number} */ (match.index);
@@ -95,6 +109,8 @@ export function detectAddresses(text) {
 // ", Bengaluru", ", United States": a capitalised town, region or country
 // segment after an address.
 const TRAILING_PLACE = /^,[^\S\r\n]*\p{Lu}[\p{L}'’.-]*(?:[^\S\r\n]\p{Lu}[\p{L}'’.-]*){0,2}(?=[^\S\r\n]*(?:[,.;)]|$|\n))/u;
+// ", 67789", ", S8P 3K5": a postcode segment between street and town.
+const TRAILING_POSTCODE = /^,[^\S\r\n]*(?:\d{5}(?:-\d{4})?|\d{6}|[A-Z]\d[A-Z][^\S\r\n]?\d[A-Z]\d)(?=[^\S\r\n]*[,.;)]|$|\n)/;
 // ", chicago" at the end of a line in lower-case chat.
 const TRAILING_LOWER_TOWN = /^,[^\S\r\n]*[\p{Ll}][\p{L}'’.-]*(?:[^\S\r\n][\p{Ll}][\p{L}'’.-]*)?[^\S\r\n]*(?=$|\n)/u;
 
@@ -108,7 +124,7 @@ function extendWithTrailingTown(text, items) {
   for (const item of items) {
     for (let segment = 0; segment < 3; segment += 1) {
       const rest = text.slice(item.end, item.end + 60);
-      const tail = TRAILING_PLACE.exec(rest) || TRAILING_LOWER_TOWN.exec(rest);
+      const tail = TRAILING_PLACE.exec(rest) || TRAILING_POSTCODE.exec(rest) || TRAILING_LOWER_TOWN.exec(rest);
       if (!tail) {
         break;
       }

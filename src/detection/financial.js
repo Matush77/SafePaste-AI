@@ -13,7 +13,10 @@ const IBAN_LENGTHS = {
 };
 
 const CARD_CANDIDATE = /(?<![\d-])\d(?:[ -]?\d){12,18}(?![\d-])/g;
-const IBAN_CANDIDATE = /\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}\b/g;
+// 4-4-4-4 (Visa, Mastercard, Discover) or 4-6-5 (American Express), with
+// the same separator throughout.
+const CARD_SHAPED = /(?<![\d-])(?:[3-6]\d{3}([ -])\d{4}\1\d{4}\1\d{4}|3[47]\d{2}([ -])\d{6}\2\d{5})(?![\d-])/g;
+const IBAN_CANDIDATE =/\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}\b/g;
 
 /** @type {[string, RegExp, import("./util.js").Confidence][]} */
 const LABELLED = [
@@ -46,6 +49,17 @@ export function detectFinancial(text) {
       const index = /** @type {number} */ (match.index);
       out.add(index, index + match[0].length, "CREDIT_CARD", "financial");
     }
+  }
+
+  // Grouped like a card but failing the checksum: a typo or a made-up
+  // example still shows someone's card format and often most of the digits.
+  for (const match of text.matchAll(CARD_SHAPED)) {
+    if (isCardNumber(match[0].replace(/\D/g, ""))) {
+      continue;
+    }
+    const index = /** @type {number} */ (match.index);
+    const cardContext = /\b(?:cards?|visa|master\s?card|amex|american express|discover|debit|credit|payment|cc)\b/.test(before(text, index, 60));
+    out.add(index, index + match[0].length, "CREDIT_CARD", "financial", cardContext ? "medium" : "low");
   }
 
   for (const match of text.matchAll(IBAN_CANDIDATE)) {

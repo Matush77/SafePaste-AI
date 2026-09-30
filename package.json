@@ -21,6 +21,7 @@
     "eval:update-baseline": "node tests/eval/run.js --update-baseline",
     "eval:ner": "node tests/eval/ner-eval.js",
     "eval:external": "node tests/eval/external/run.js",
+    "eval:analyze": "node tests/eval/external/analyze.js",
     "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e",
     "test:live": "node tests/live/live-playwright-qa.js",
     "qa:live:open": "node tests/live/open-live-qa-browser.js"

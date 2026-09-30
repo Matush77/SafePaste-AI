@@ -168,7 +168,7 @@ function toSample(id, text, spans) {
   for (const span of spans) {
     const category = LABELS[span.label];
     if (category) {
-      gold.push({ start: span.start, end: span.end, category, value: text.slice(span.start, span.end) });
+      gold.push({ start: span.start, end: span.end, category, value: text.slice(span.start, span.end), label: span.label });
     } else {
       neutral.push({ start: span.start, end: span.end });
     }

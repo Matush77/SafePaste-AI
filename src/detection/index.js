@@ -8,7 +8,7 @@ import { detectGitleaks } from "./gitleaks.js";
 import { detectGovernmentIds } from "./governmentIds.js";
 import { detectNetwork } from "./network.js";
 import { detectSecrets } from "./secrets.js";
-import { detectStructured } from "./structured.js";
+import { detectStructured, isFieldLabel } from "./structured.js";
 
 /**
  * @typedef {import("./util.js").Candidate} Candidate
@@ -28,7 +28,11 @@ const CATEGORY_PRIORITY = [
   "organizations", "locations", "urls"
 ];
 
-const URL_PATTERN = /\bhttps?:\/\/[^\s<>"'`]+/gi;
+// Categories whose rules can mistake a form or column label ("Last Name",
+// "Employment Status") for data.
+const LABEL_PRONE = new Set(["people", "organizations", "locations"]);
+
+const URL_PATTERN =/\bhttps?:\/\/[^\s<>"'`]+/gi;
 
 /**
  * @param {string} text
@@ -52,7 +56,8 @@ export function detectAll(text, settings, extra = []) {
 
   promoteNearPersonalData(candidates);
   const kept = candidates.filter(
-    (candidate) => settings.categories[candidate.category] && CONFIDENCE_RANK[candidate.confidence] >= minimum
+    (candidate) => settings.categories[candidate.category] && CONFIDENCE_RANK[candidate.confidence] >= minimum &&
+      !(LABEL_PRONE.has(candidate.category) && isFieldLabel(text.slice(candidate.start, candidate.end)))
   );
   return mergeOverlaps(text, kept);
 }

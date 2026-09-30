@@ -35,6 +35,12 @@ export const NOT_NAME = new Set([
   "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "january", "february", "march", "april",
   "may", "june", "july", "august", "september", "october", "november", "december", "today", "tomorrow", "yesterday",
   "new", "old", "big", "small", "north", "south", "east", "west", "not", "no", "yes", "ok", "okay", "admin", "root", "api",
+  // Roles used in greetings and sign-offs ("Dear Tenant", "Dear Vehicle Owner", "The Marketing Team").
+  "recipient", "recipients", "tenant", "tenants", "applicant", "applicants", "member", "members", "patient", "patients",
+  "owner", "owners", "vehicle", "potential", "valued", "colleague", "colleagues", "partner", "partners", "parent",
+  "parents", "guardian", "resident", "residents", "employee", "employees", "student", "students", "candidate",
+  "subscriber", "policyholder", "homeowner", "participant", "participants", "shareholder", "shareholders", "investor",
+  "investors", "marketing", "hiring", "manager", "neighbor", "neighbour", "community", "staff", "board", "committee",
   "bonjour", "hola", "ciao", "hallo", "ahoj", "dobrý", "dobry", "deň", "den", "cześć", "hej", "salut", "servus", "grüß", "gott"
 ]);
 
@@ -61,6 +67,8 @@ const ORG_CONTEXT = new RegExp(`\\b(?:works? (?:at|for)|working (?:at|for)|emplo
 // these only count next to other personal data.
 const INSTITUTION = new RegExp(`(?<![\\p{L}\\d])(?!(?:The|My|Our|Your|His|Her|Their|This|That|Its)\\b)\\p{Lu}[\\p{L}\\d'’.-]*(?:${H}+${ORG_WORD}){0,4}${H}+(?:University|College|School|Academy|Bank|Credit Union|Foundation|Institute|Hospital|Clinic|Medical Center|Health|Laboratories|Labs|Trust|Association|Society|Council|Agency|Partners|Consulting|Solutions|Systems|Technologies|Mutual)(?![\\p{L}\\d])`, "gu");
 const PLACE = new RegExp(`(?<![\\p{L}\\d])(?:${PLACE_NAMES.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?![\\p{L}\\d])`, "gu");
+// "Knox County", "St. Tammany Parish", "Baltimore County"
+const COUNTY = new RegExp(`(?<![\\p{L}\\d])(?!(?:The|This|That|Each|Every|Our|Your|Their|Its|A|Any|One)\\b)(?:St\\.${H}+)?\\p{Lu}[\\p{Ll}'’.-]+(?:${H}+\\p{Lu}[\\p{Ll}'’.-]+){0,2}${H}+(?:County|Parish|Borough)(?![\\p{L}\\d])`, "gu");
 // Precise coordinates: 37.7749,-122.4194
 const COORDINATES = /(?<![\d.])-?\d{1,2}\.\d{3,},\s*-?\d{1,3}\.\d{3,}(?![\d.])/g;
 
@@ -171,6 +179,9 @@ function collectOrganizations(text, out) {
   for (const match of text.matchAll(ORGANIZATION)) {
     const index = /** @type {number} */ (match.index);
     const weakSuffix = /(?:Group|Holdings)$/.test(match[0]);
+    if (weakSuffix && isGenericPhrase(match[0])) {
+      continue;
+    }
     out.add(index, index + match[0].length, "ORG", "organizations", weakSuffix ? "medium" : "high");
   }
   for (const match of text.matchAll(ORG_CONTEXT)) {
@@ -178,8 +189,32 @@ function collectOrganizations(text, out) {
   }
   for (const match of text.matchAll(INSTITUTION)) {
     const index = /** @type {number} */ (match.index);
+    if (isGenericPhrase(match[0])) {
+      continue;
+    }
     out.add(index, index + match[0].length, "ORG", "organizations", "low", true);
   }
+}
+
+// Descriptive words that, with a suffix like "Health", "Systems" or
+// "Group", name a topic or heading rather than a company: "Access Control
+// Systems", "Travel Health", "Packing Group", "Current Holdings".
+const GENERIC_ORG_WORDS = new Set([
+  "access", "affected", "age", "behavioral", "behavioural", "blood", "child", "community", "comprehensive", "computer",
+  "control", "current", "data", "digital", "environmental", "ethnic", "family", "focus", "global", "information",
+  "management", "mental", "monitoring", "occupational", "operating", "oral", "packing", "personal", "population",
+  "primary", "public", "risk", "security", "support", "target", "travel", "user", "working", "work", "study", "test",
+  "sample", "income", "product", "customer", "employee", "patient", "member", "reproductive", "sexual", "women's",
+  "men's", "maternal", "financial", "home", "school", "student", "project"
+]);
+
+/**
+ * Whether every word before the final suffix word is a descriptive word.
+ * @param {string} phrase
+ */
+function isGenericPhrase(phrase) {
+  const words = phrase.split(/\s+/).slice(0, -1).map((word) => word.toLowerCase());
+  return words.length > 0 && words.every((word) => GENERIC_ORG_WORDS.has(word) || word === "and" || word === "&" || word === "of");
 }
 
 /**
@@ -197,6 +232,10 @@ function collectLocations(text, out) {
     addPlace(out, match, 1);
   }
   for (const match of text.matchAll(PLACE)) {
+    const index = /** @type {number} */ (match.index);
+    out.add(index, index + match[0].length, "LOCATION", "locations", "low", true);
+  }
+  for (const match of text.matchAll(COUNTY)) {
     const index = /** @type {number} */ (match.index);
     out.add(index, index + match[0].length, "LOCATION", "locations", "low", true);
   }

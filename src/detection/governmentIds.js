@@ -80,6 +80,13 @@ export function detectGovernmentIds(text) {
     }
   }
 
+  // Record numbers whose prefix says what they are: medical record, employee,
+  // patient and member numbers.
+  for (const match of text.matchAll(/\b(?:MRN|EMP|PAT|MBR)[-#]?\d{5,10}\b/g)) {
+    const index = /** @type {number} */ (match.index);
+    out.add(index, index + match[0].length, "RECORD_ID", "governmentIds", "medium");
+  }
+
   for (const [type, regex, confidence] of LABELLED) {
     for (const match of text.matchAll(regex)) {
       const value = match[1];

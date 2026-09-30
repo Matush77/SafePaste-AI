@@ -8,7 +8,8 @@ import { DEFAULT_SETTINGS } from "../../src/redactor.js";
 
 /**
  * @typedef {import("../../src/redactor.js").Category} Category
- * @typedef {{ start: number, end: number, category: Category, value: string }} GoldSpan
+ * @typedef {{ start: number, end: number, category: Category, value: string, label?: string }} GoldSpan
+ *   `label`: the original label in an external dataset, for error analysis.
  * @typedef {{ id: string, file: string, benign: boolean, text: string, gold: GoldSpan[], neutral?: { start: number, end: number }[] }} Sample
  *   `neutral`: labelled in an external dataset but outside what the extension
  *   aims to redact (dates, job titles...). Redacting them is neither rewarded
