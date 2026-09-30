@@ -9,7 +9,7 @@
 ## Listing
 
 - Use `STORE_LISTING.md` for the name, short description, detailed description, single-purpose statement, and permission justifications.
-- Regenerate the icons and store images with `npm run build && npm run assets` (sources: `store-assets/brand/logo.svg`, `logo-16.svg` and `scripts/store-assets.js`; the screenshots show the real built extension).
+- Regenerate the icons and store images with `npm run build && npm run assets` (sources: `store-assets/brand/logo.svg`, `logo-16.svg` and `scripts/store-assets.js`; the screenshots show the real built extension). `npm run assets -- --gemini` refreshes the Gemini captures in `store-assets/captures/` with the live QA profile; it crops to the prompt box and the SafePaste notice only, and never sends anything.
 - Upload from `store-assets/`: `screenshot-1..4-1280x800.png` as screenshots, `promo-small-440x280.png` as the small promo tile, and `marquee-1400x560.png` as the marquee.
 - Choose the most appropriate category and distribution visibility.
 

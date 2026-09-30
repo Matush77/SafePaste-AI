@@ -1,33 +1,40 @@
 import { mergeSettings } from "../redactor.js";
 import { MESSAGES, NAME_MODEL_SIZE_MB } from "../shared/nameModel.js";
 import { LAST_REDACTION_KEY, SETTINGS_KEY } from "../shared/storageKeys.js";
+import { SUPPORTED_SITE_NAMES, siteForHostname } from "../siteAdapters.js";
 
-/** @type {Record<import("../redactor.js").Category, string>} */
-const CATEGORY_NAMES = {
-  apiKeys: "API keys and tokens",
-  credentials: "Credentials in key/value text",
-  emails: "Email addresses",
-  phones: "Phone numbers",
-  financial: "Credit cards and IBANs",
-  governmentIds: "Government IDs",
-  network: "IP and MAC addresses",
-  addresses: "Street addresses",
-  people: "People names",
-  organizations: "Organizations",
-  locations: "Locations",
-  urls: "URLs"
+/** @typedef {import("../redactor.js").Category} Category */
+
+/** @type {{ name: string, categories: [Category, string][] }[]} */
+const CATEGORY_GROUPS = [
+  { name: "Secrets", categories: [["apiKeys", "API keys"], ["credentials", "Passwords"]] },
+  { name: "Contact", categories: [["emails", "Emails"], ["phones", "Phones"], ["addresses", "Addresses"]] },
+  { name: "Money and IDs", categories: [["financial", "Cards & IBANs"], ["governmentIds", "Government IDs"]] },
+  { name: "People and places", categories: [["people", "Names"], ["organizations", "Organizations"], ["locations", "Places"]] },
+  { name: "Technical", categories: [["network", "IP & MAC"], ["urls", "URLs"]] }
+];
+
+const SENSITIVITY_HINTS = {
+  balanced: "Redacts confident matches. Fewest false alarms.",
+  strict: "Also redacts likely matches, such as random-looking strings and place names on their own."
 };
 
-const enabled = /** @type {HTMLInputElement} */ (document.getElementById("enabled"));
-const categories = /** @type {HTMLElement} */ (document.getElementById("categories"));
-const placeholderStyle = /** @type {HTMLSelectElement} */ (document.getElementById("placeholderStyle"));
-const sensitivity = /** @type {HTMLSelectElement} */ (document.getElementById("sensitivity"));
-const showToast = /** @type {HTMLInputElement} */ (document.getElementById("showToast"));
-const nameModel = /** @type {HTMLInputElement} */ (document.getElementById("nameModel"));
-const nameModelStatus = /** @type {HTMLElement} */ (document.getElementById("nameModelStatus"));
-const lastRedaction = /** @type {HTMLElement} */ (document.getElementById("lastRedaction"));
+const byId = (/** @type {string} */ id) => /** @type {HTMLElement} */ (document.getElementById(id));
+const enabled = /** @type {HTMLInputElement} */ (byId("enabled"));
+const tabStatus = byId("tabStatus");
+const sensitivityInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll("input[name='sensitivity']"));
+const sensitivityHint = byId("sensitivityHint");
+const nameModel = /** @type {HTMLInputElement} */ (byId("nameModel"));
+const nameModelStatus = byId("nameModelStatus");
+const categories = byId("categories");
+const typesCount = byId("typesCount");
+const placeholderStyle = /** @type {HTMLSelectElement} */ (byId("placeholderStyle"));
+const showToast = /** @type {HTMLInputElement} */ (byId("showToast"));
+const lastRedaction = byId("lastRedaction");
 
 let settings = mergeSettings();
+/** @type {import("../siteAdapters.js").Site | null} */
+let tabSite = null;
 
 init();
 
@@ -42,10 +49,28 @@ function init() {
     renderLastRedaction(sanitizeLastRedaction(/** @type {any} */ (items[LAST_REDACTION_KEY])));
   });
 
+  // The URL is only visible for tabs on the supported sites (the extension's
+  // host permissions), which is all the status line needs.
+  chrome.tabs.query({ active: true, currentWindow: true })
+    .then(([tab]) => {
+      tabSite = tab && tab.url ? siteForHostname(new URL(tab.url).hostname) : null;
+      renderTabStatus();
+    })
+    .catch(() => renderTabStatus());
+
   enabled.addEventListener("change", () => updateSettings({ enabled: enabled.checked }));
+  for (const input of sensitivityInputs) {
+    input.addEventListener("change", () => updateSettings({ sensitivity: /** @type {"balanced" | "strict"} */ (input.value) }));
+  }
   placeholderStyle.addEventListener("change", () => updateSettings({ placeholderStyle: /** @type {"typed" | "compact"} */ (placeholderStyle.value) }));
-  sensitivity.addEventListener("change", () => updateSettings({ sensitivity: /** @type {"balanced" | "strict"} */ (sensitivity.value) }));
   showToast.addEventListener("change", () => updateSettings({ showToast: showToast.checked }));
+  const infoToggle = byId("nameModelInfoToggle");
+  const info = byId("nameModelInfo");
+  infoToggle.addEventListener("click", () => {
+    info.hidden = !info.hidden;
+    infoToggle.setAttribute("aria-expanded", String(!info.hidden));
+  });
+
   nameModel.addEventListener("change", () => {
     updateSettings({ nameModel: nameModel.checked });
     if (nameModel.checked) {
@@ -76,59 +101,99 @@ function requestModel(type) {
 
 /** @param {import("../shared/nameModel.js").NameModelStatus | null} status */
 function renderModelStatus(status) {
+  nameModelStatus.textContent = "";
   if (!status || !nameModel.checked) {
-    nameModelStatus.textContent = "";
     return;
   }
-  const text = {
-    absent: `Not downloaded yet (about ${NAME_MODEL_SIZE_MB} MB).`,
-    downloaded: "Downloaded. Loads when you next paste on a supported site.",
-    downloading: `Downloading the model… ${status.progress ?? 0}%`,
-    loading: "Loading the model…",
-    ready: "Ready. Names are checked on this device.",
-    error: `The model could not be loaded: ${status.error || "unknown error"}. Pastes are still redacted with the built-in rules.`
-  }[status.state];
-  nameModelStatus.textContent = text;
+  const pill = document.createElement("span");
+  pill.className = "pill";
+  switch (status.state) {
+    case "ready":
+      pill.classList.add("ok");
+      pill.textContent = "Ready · runs on this device";
+      break;
+    case "downloaded":
+      pill.classList.add("ok");
+      pill.textContent = "Downloaded · loads on your next paste";
+      break;
+    case "absent":
+      pill.textContent = `Not downloaded yet (about ${NAME_MODEL_SIZE_MB} MB)`;
+      break;
+    case "loading":
+      pill.textContent = "Loading the model…";
+      break;
+    case "downloading": {
+      const progress = Math.max(0, Math.min(100, Math.round(status.progress ?? 0)));
+      pill.textContent = `Downloading… ${progress}%`;
+      const bar = document.createElement("div");
+      bar.className = "progress";
+      const fill = document.createElement("div");
+      fill.style.width = `${progress}%`;
+      bar.append(fill);
+      nameModelStatus.append(pill, bar);
+      return;
+    }
+    default:
+      pill.classList.add("error");
+      pill.textContent = `The model could not be loaded: ${status.error || "unknown error"}. Pastes are still redacted with the built-in rules.`;
+  }
+  nameModelStatus.append(pill);
+}
+
+function renderTabStatus() {
+  tabStatus.className = "status";
+  if (!settings.enabled) {
+    tabStatus.classList.add("paused");
+    tabStatus.textContent = "Paused: pastes are not checked";
+  } else if (tabSite) {
+    tabStatus.classList.add("on");
+    tabStatus.textContent = `Protecting this tab · ${tabSite.name}`;
+  } else {
+    tabStatus.textContent = `Works on ${SUPPORTED_SITE_NAMES.join(", ")}`;
+  }
 }
 
 function renderCategoryControls() {
   categories.textContent = "";
-  for (const [key, label] of Object.entries(CATEGORY_NAMES)) {
-    const row = document.createElement("label");
-    row.className = "toggle";
+  for (const group of CATEGORY_GROUPS) {
+    const heading = document.createElement("div");
+    heading.className = "group";
+    heading.textContent = group.name;
+    categories.append(heading);
 
-    const text = document.createElement("span");
-    text.textContent = label;
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.dataset.category = key;
-    input.addEventListener("change", () => {
-      updateSettings({
-        categories: {
-          ...settings.categories,
-          [key]: input.checked
-        }
+    for (const [key, label] of group.categories) {
+      const chip = document.createElement("label");
+      chip.className = "chip";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.category = key;
+      input.addEventListener("change", () => {
+        updateSettings({ categories: { ...settings.categories, [key]: input.checked } });
       });
-    });
-
-    row.append(text, input);
-    categories.append(row);
+      chip.append(input, label);
+      categories.append(chip);
+    }
   }
 }
 
 function renderSettings() {
   enabled.checked = settings.enabled;
+  for (const input of sensitivityInputs) {
+    input.checked = input.value === settings.sensitivity;
+  }
+  sensitivityHint.textContent = SENSITIVITY_HINTS[settings.sensitivity];
   placeholderStyle.value = settings.placeholderStyle;
-  sensitivity.value = settings.sensitivity;
   showToast.checked = settings.showToast;
   nameModel.checked = settings.nameModel;
 
-  for (const input of categories.querySelectorAll("input[data-category]")) {
-    const checkbox = /** @type {HTMLInputElement} */ (input);
-    const category = /** @type {import("../redactor.js").Category} */ (checkbox.dataset.category);
-    checkbox.checked = Boolean(settings.categories[category]);
+  const inputs = /** @type {NodeListOf<HTMLInputElement>} */ (categories.querySelectorAll("input[data-category]"));
+  let on = 0;
+  for (const checkbox of inputs) {
+    checkbox.checked = Boolean(settings.categories[/** @type {Category} */ (checkbox.dataset.category)]);
+    on += checkbox.checked ? 1 : 0;
   }
+  typesCount.textContent = `${on} of ${inputs.length} on`;
+  renderTabStatus();
 }
 
 /** @param {Partial<import("../redactor.js").Settings>} patch */
@@ -151,23 +216,45 @@ function updateSettings(patch) {
 
 /** @param {RedactionSummary | undefined} summary */
 function renderLastRedaction(summary) {
+  lastRedaction.textContent = "";
   if (!summary) {
-    lastRedaction.textContent = "No redactions yet.";
+    lastRedaction.textContent = "Nothing redacted yet.";
     return;
   }
 
   const counts = summary.findings && summary.findings.counts ? summary.findings.counts : {};
-  const countText = Object.entries(counts)
-    .map(([type, count]) => `${type}: ${count}`)
-    .join(", ");
+  const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+  const line = document.createElement("div");
+  line.textContent = [summary.site || "Unknown site", relativeTime(summary.timestamp), `${total} ${total === 1 ? "item" : "items"} redacted`].join(" · ");
+  lastRedaction.append(line);
 
-  lastRedaction.innerHTML = "";
-  const top = document.createElement("div");
-  top.textContent = `${summary.site || "Site"} at ${formatTime(summary.timestamp)}`;
-  const bottom = document.createElement("div");
-  bottom.className = "muted";
-  bottom.textContent = countText || "No sensitive text found.";
-  lastRedaction.append(top, bottom);
+  const list = document.createElement("div");
+  list.className = "counts";
+  for (const [type, count] of Object.entries(counts)) {
+    const chip = document.createElement("span");
+    chip.className = "count";
+    chip.textContent = `${count} ${type}`;
+    list.append(chip);
+  }
+  lastRedaction.append(list);
+}
+
+/** @param {string | undefined} value */
+function relativeTime(value) {
+  const time = value ? new Date(value).getTime() : NaN;
+  if (Number.isNaN(time)) {
+    return "unknown time";
+  }
+  const seconds = Math.round((time - Date.now()) / 1000);
+  const format = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  /** @type {[Intl.RelativeTimeFormatUnit, number][]} */
+  const units = [["day", 86400], ["hour", 3600], ["minute", 60]];
+  for (const [unit, size] of units) {
+    if (Math.abs(seconds) >= size) {
+      return format.format(Math.round(seconds / size), unit);
+    }
+  }
+  return "just now";
 }
 
 // Versions before 1.0.2 stored the redacted prompt text and page URL with the
@@ -189,12 +276,4 @@ function sanitizeLastRedaction(summary) {
   }
   chrome.storage.local.set({ [LAST_REDACTION_KEY]: sanitized });
   return sanitized;
-}
-
-/** @param {string | undefined} value */
-function formatTime(value) {
-  if (!value) {
-    return "unknown time";
-  }
-  return new Date(value).toLocaleString();
 }

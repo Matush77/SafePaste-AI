@@ -8,66 +8,83 @@
   </head>
   <body>
     <main>
-      <header class="app-header">
+      <header class="card header">
         <div class="brand">
           <img class="brand-mark" src="assets/logo.svg" alt="" width="36" height="36">
           <div>
             <h1>SafePaste AI</h1>
-            <p>Local paste redaction</p>
+            <p id="tabStatus" class="status" role="status"></p>
           </div>
         </div>
-        <label class="switch">
-          <input id="enabled" type="checkbox">
-          <span>Enabled</span>
-        </label>
+        <input id="enabled" class="switch" type="checkbox" role="switch" aria-label="Enabled">
       </header>
 
-      <section>
-        <h2>Sensitivity</h2>
-        <label class="select-row">
-          <span>Level</span>
-          <select id="sensitivity" aria-describedby="sensitivityHint">
-            <option value="balanced">Balanced</option>
-            <option value="strict">Strict</option>
-          </select>
-        </label>
-        <p id="sensitivityHint" class="hint">Balanced redacts confident matches. Strict also redacts likely ones, such as random-looking strings and place names on their own.</p>
+      <section class="card" aria-labelledby="levelTitle">
+        <h2 id="levelTitle">Protection level</h2>
+        <div id="sensitivity" class="segmented" role="radiogroup" aria-labelledby="levelTitle" aria-describedby="sensitivityHint">
+          <label><input type="radio" name="sensitivity" value="balanced"><span>Balanced</span></label>
+          <label><input type="radio" name="sensitivity" value="strict"><span>Strict</span></label>
+        </div>
+        <p id="sensitivityHint" class="hint"></p>
       </section>
 
-      <section>
-        <h2>Name detection</h2>
-        <label class="select-row">
-          <span>Enhanced name detection</span>
-          <input id="nameModel" type="checkbox" aria-describedby="nameModelHint nameModelStatus">
-        </label>
-        <p id="nameModelHint" class="hint">Finds names the built-in rules miss, using an AI model that runs on this device. Turning it on downloads the model once (about 66 MB, from Hugging Face). Pasted text never leaves your browser.</p>
-        <p id="nameModelStatus" class="hint" role="status" aria-live="polite"></p>
+      <section class="card">
+        <div class="row">
+          <label for="nameModel" class="row-text">
+            <span class="row-title">Enhanced name detection</span>
+            <span class="hint">On-device AI finds names the rules miss. About 66 MB, downloaded once.</span>
+          </label>
+          <input id="nameModel" class="switch" type="checkbox" role="switch" aria-describedby="nameModelStatus">
+        </div>
+        <button id="nameModelInfoToggle" class="info-toggle" type="button" aria-expanded="false" aria-controls="nameModelInfo">How it works</button>
+        <div id="nameModelInfo" class="info" hidden>
+          <dl>
+            <dt>What it is</dt>
+            <dd>An English name-recognition model (DistilBERT, fine-tuned to find people, organisations and places), about 66 MB.</dd>
+            <dt>Where it comes from</dt>
+            <dd>Downloaded once from Hugging Face (huggingface.co) when you turn this on. SafePaste only accepts one fixed version of the model and checks every file against its known fingerprint (SHA-256) before using it.</dd>
+            <dt>Where it is kept</dt>
+            <dd>In this browser's cache for SafePaste, on your device. Turning the feature off keeps the download so it can be turned on again instantly; removing the extension deletes it.</dd>
+            <dt>How it is used</dt>
+            <dd>When you paste into a supported AI chat, the text is checked by the model on your device, together with the built-in rules. Pasted text is never sent to Hugging Face or anyone else. The download request contains no personal data, but like any download it shows your IP address to Hugging Face.</dd>
+            <dt>If it fails</dt>
+            <dd>If the model cannot load or answer in time, pastes are still redacted with the built-in rules, and the notice tells you so.</dd>
+          </dl>
+          <a href="privacy.html" target="_blank">Privacy policy</a>
+        </div>
+        <div id="nameModelStatus" class="model-status" role="status" aria-live="polite"></div>
       </section>
 
-      <section>
-        <h2>Detect</h2>
-        <div id="categories" class="toggles"></div>
+      <details id="types" class="card types">
+        <summary>
+          <h2>What to redact</h2>
+          <span id="typesCount" class="hint"></span>
+        </summary>
+        <div id="categories"></div>
+      </details>
+
+      <section class="card">
+        <h2>Last paste</h2>
+        <div id="lastRedaction" class="last"></div>
       </section>
 
-      <section>
-        <h2>Placeholders</h2>
-        <label class="select-row">
-          <span>Style</span>
+      <footer class="footer">
+        <label class="inline">
+          <span>Placeholders</span>
           <select id="placeholderStyle">
             <option value="typed">[[TYPE_1]]</option>
             <option value="compact">[TYPE_1]</option>
           </select>
         </label>
-        <label class="select-row">
-          <span>Show redaction notice</span>
-          <input id="showToast" type="checkbox">
+        <label class="inline">
+          <span>On-page notice</span>
+          <input id="showToast" class="switch small" type="checkbox" role="switch">
         </label>
-      </section>
-
-      <section>
-        <h2>Last Redaction</h2>
-        <div id="lastRedaction" class="last">No redactions yet.</div>
-      </section>
+        <nav class="links">
+          <a href="privacy.html" target="_blank">Privacy</a>
+          <a href="THIRD_PARTY_NOTICES.md" target="_blank">Licences</a>
+        </nav>
+      </footer>
     </main>
     <script src="popup.js"></script>
   </body>

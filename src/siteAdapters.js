@@ -58,6 +58,18 @@ export function currentSite(loc = location, doc = document) {
 }
 
 /**
+ * The supported site at `hostname`, for the popup's status line.
+ * @param {string} hostname
+ * @returns {Site | null}
+ */
+export function siteForHostname(hostname) {
+  return Object.prototype.hasOwnProperty.call(SITES, hostname) ? SITES[hostname] : null;
+}
+
+/** Names of the supported sites, e.g. for "Works on ChatGPT, Gemini and Claude". */
+export const SUPPORTED_SITE_NAMES = Object.values(SITES).map((site) => site.name);
+
+/**
  * The editable element an event is aimed at, looking through shadow roots.
  * @param {Event} event
  * @returns {HTMLElement | null}

@@ -275,7 +275,7 @@ async function setEnabled(page, enabled) {
  */
 async function setSensitivity(page, level) {
   await page.goto(`chrome-extension://${extensionId}/popup.html`);
-  await page.locator("#sensitivity").selectOption(level);
+  await page.locator("#sensitivity label", { hasText: level === "strict" ? "Strict" : "Balanced" }).click();
   if (process.env.POPUP_SCREENSHOT) {
     await page.screenshot({ path: process.env.POPUP_SCREENSHOT, fullPage: true });
   }
