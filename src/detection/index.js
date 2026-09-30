@@ -9,6 +9,9 @@ import { detectGovernmentIds } from "./governmentIds.js";
 import { detectNetwork } from "./network.js";
 import { detectSecrets } from "./secrets.js";
 import { detectStructured, isFieldLabel } from "./structured.js";
+import { FIRST_NAMES, normaliseName } from "./data/firstNames.js";
+import { COMMON_FIRST_NAMES, NAME_WORDS, SURNAMES } from "./data/names.js";
+import { NOT_NAME } from "./entities.js";
 
 /**
  * @typedef {import("./util.js").Candidate} Candidate
@@ -59,7 +62,62 @@ export function detectAll(text, settings, extra = []) {
     (candidate) => settings.categories[candidate.category] && CONFIDENCE_RANK[candidate.confidence] >= minimum &&
       !(LABEL_PRONE.has(candidate.category) && isFieldLabel(text.slice(candidate.start, candidate.end)))
   );
+  kept.push(...repeatedNames(text, kept));
   return mergeOverlaps(text, kept);
+}
+
+/** @param {string} name Normalised. */
+function isKnownNamePart(name) {
+  return FIRST_NAMES.has(name) || COMMON_FIRST_NAMES.has(name) || SURNAMES.has(name);
+}
+
+const NAME_TOKEN =/(?<![\p{L}\d'’-])\p{Lu}[\p{L}'’-]{2,}(?![\p{L}\d'’-])/gu;
+
+/**
+ * "Toni Levine ... Toni was born": once a name is found, its parts are
+ * redacted wherever else they appear, so the rest of the text does not give
+ * the name away. Parts that are also ordinary words ("Will", "Grace") only
+ * count where they cannot be a capitalised sentence start.
+ * @param {string} text
+ * @param {Candidate[]} kept
+ * @returns {Candidate[]}
+ */
+function repeatedNames(text, kept) {
+  /** @type {Map<string, import("./util.js").Confidence>} */
+  const parts = new Map();
+  for (const candidate of kept) {
+    if (candidate.category !== "people") {
+      continue;
+    }
+    const tokens = [...text.slice(candidate.start, candidate.end).matchAll(NAME_TOKEN)].map((match) => match[0]);
+    // A mistaken match ("Information Sheet") must not spread, so only known
+    // name parts spread, or parts of a confident multi-word name.
+    const trusted = candidate.confidence === "high" && tokens.length >= 2;
+    for (const part of tokens) {
+      const name = normaliseName(part);
+      const known = parts.get(part);
+      if ((trusted || isKnownNamePart(name)) && !NOT_NAME.has(name) && !isFieldLabel(part) && (!known || CONFIDENCE_RANK[candidate.confidence] > CONFIDENCE_RANK[known])) {
+        parts.set(part, candidate.confidence);
+      }
+    }
+  }
+  if (!parts.size) {
+    return [];
+  }
+  /** @type {Candidate[]} */
+  const found = [];
+  for (const match of text.matchAll(NAME_TOKEN)) {
+    const confidence = parts.get(match[0]);
+    if (!confidence) {
+      continue;
+    }
+    const index = /** @type {number} */ (match.index);
+    if (NAME_WORDS.has(normaliseName(match[0])) && /(?:^|[.!?:\n]\s*|\n\s*[-*•]?\s*)$/.test(text.slice(Math.max(0, index - 4), index))) {
+      continue;
+    }
+    found.push({ start: index, end: index + match[0].length, type: "PERSON", category: "people", confidence });
+  }
+  return found;
 }
 
 // How close (in characters) other personal data must be for a place or

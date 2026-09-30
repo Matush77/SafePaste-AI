@@ -61,6 +61,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `static/` | Manifest, popup HTML/CSS, privacy page, icons. Copied into the build as-is. |
 | `scripts/build.js` | Bundles `src/` with esbuild and validates and zips the package. |
 | `scripts/update-gitleaks-rules.js` | Regenerates `src/detection/data/gitleaksRules.js` from a pinned gitleaks release, converting its Go regexes with `scripts/goRegex.js`. |
+| `scripts/update-name-lists.js` | Regenerates `src/detection/data/names.js`: first names (US Social Security Administration), surnames (US Census Bureau) and which of them are also ordinary words. |
 | `tests/unit/` | Unit tests (Vitest, with jsdom for DOM code). |
 | `tests/eval/` | Labelled evaluation corpus, scorer and quality baseline. |
 | `tests/fixtures/legacy/` | Benchmarks from before the evaluation corpus, kept as leak-regression checks. |
@@ -98,7 +99,7 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 
 `tests/eval/holdout/` is a second labelled set that detection rules are never tuned against. `npm run eval -- --holdout` scores it, which shows whether an improvement generalises or only fits the main corpus.
 
-Both sets were written in-house. `npm run eval:external` is an independent check on text written by others: nvidia/Nemotron-PII (CC BY 4.0) and gretelai/gretel-pii-masking-en-v1 (Apache-2.0). Rows 0-499 of each are the development set; rows 1000-1499 are a test set that rules are never tuned against. Labels outside what SafePaste aims to redact (dates, job titles) are scored as neutral. Recall there is lower than on the in-house corpus (about 71% on the Nemotron and 75% on the Gretel test sets), mostly because of missed names and organisations. `npm run eval:analyze` groups the development-set misses and false positives by label, with context.
+Both sets were written in-house. `npm run eval:external` is an independent check on text written by others: nvidia/Nemotron-PII (CC BY 4.0) and gretelai/gretel-pii-masking-en-v1 (Apache-2.0). Rows 0-499 of each are the development set; rows 1000-1499 are a test set that rules are never tuned against. Labels outside what SafePaste aims to redact (dates, job titles) are scored as neutral. Recall there is lower than on the in-house corpus (about 80% on the Nemotron and 79% on the Gretel test sets), mostly because of missed company names and names that appear on their own. `npm run eval:analyze` groups the development-set misses and false positives by label, with context.
 
 `tests/eval/baseline.json` and `baseline-holdout.json` store the accepted scores, and `npm test` fails if any of them gets worse. `tests/unit/performance.test.js` also fails if any input makes detection slow, because detection runs inside the paste handler; it runs every gitleaks rule on adversarial input built around its keywords. When a change improves the scores, run `npm run eval:update-baseline` and commit the new baseline with the change. Never edit the corpus labels to make a score go up.
 

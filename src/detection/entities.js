@@ -2,6 +2,7 @@
 // to these when it is available (see src/ner/).
 
 import { FIRST_NAMES, normaliseName } from "./data/firstNames.js";
+import { COMMON_FIRST_NAMES, NAME_WORDS, SURNAMES } from "./data/names.js";
 import { PLACE_NAMES } from "./data/places.js";
 import { CAP_WORD, Collector } from "./util.js";
 
@@ -21,9 +22,11 @@ function ci(pattern) {
   });
 }
 const PARTICLE = "(?:de|del|della|di|da|dos|du|van|von|der|den|ten|ter|la|le|al|el|bin|ibn|mac|st\\.?)";
+// A middle initial: "Jeremy J. Smith".
+const INITIAL = `(?:\\p{Lu}\\.${H}+)?`;
 // "Jane Smith", "Siobhán Ní Bhriain", "Ludwig van Beethoven", "Kevin O'Brien"
-const FULL_NAME = `${CAP_WORD}(?:${H}+(?:${PARTICLE}${H}+){0,2}${CAP_WORD}){1,3}`;
-const ANY_NAME = `${CAP_WORD}(?:${H}+(?:${PARTICLE}${H}+){0,2}${CAP_WORD}){0,3}`;
+const FULL_NAME = `${CAP_WORD}(?:${H}+(?:${PARTICLE}${H}+){0,2}${INITIAL}${CAP_WORD}){1,3}`;
+const ANY_NAME = `${CAP_WORD}(?:${H}+(?:${PARTICLE}${H}+){0,2}${INITIAL}${CAP_WORD}){0,3}`;
 const LOWER_NAME = "[a-z][a-z'’-]+(?:[^\\S\\r\\n]+[a-z][a-z'’-]+){0,2}";
 
 // Capitalised words that start sentences or headings, never names.
@@ -50,13 +53,18 @@ const GREETING = new RegExp(`(?:^|(?<=[\\s>]))(?:Dear|Hi|Hello|Hey|Hallo|Bonjour
 const SIGN_OFF = new RegExp(`^${H}*${ci("(?:best|best regards|kind regards|warm regards|regards|many thanks|thanks|thank you|cheers|sincerely|yours|yours sincerely|all the best|s pozdravom|s pozdravem|mit freundlichen grüßen|cordialement|saludos|pozdrawiam)")}(?:,${H}*\\r?\\n${H}*|,${H}+|${H}*\\r?\\n${H}*)(${ANY_NAME})${H}*(?=\\r?\\n|$)`, "dgmu");
 const TITLED = new RegExp(`\\b(?:Mr|Mrs|Ms|Miss|Mx|Dr|Prof|Sir|Herr|Frau|Mme|Mlle|Sr|Sra|Pan|Pani)\\.?${H}+(${ANY_NAME})`, "dgu");
 // Phrases that are always followed by a name, even a lower-case one.
-const INTRODUCTION = new RegExp(`\\b${ci("(?:my name is|name's|volám sa|volam sa|jmenuji se|je m'appelle|ich heiße|ich heisse|me llamo|mi chiamo|nazywam się|mein name ist)")}${H}+(${ANY_NAME}|${LOWER_NAME})(?=[\\s,.!;]|$)`, "dgu");
+const INTRODUCTION = new RegExp(`\\b${ci("(?:my (?:first |last |full |middle |legal |given )?name is|name's|volám sa|volam sa|jmenuji se|je m'appelle|ich heiße|ich heisse|me llamo|mi chiamo|nazywam się|mein name ist)")}${H}+(${ANY_NAME}|${LOWER_NAME})(?=[\\s,.!;]|$)`, "dgu");
 // Phrases that are often followed by other things ("I am happy", "This is Big
 // Data"); these need a full name starting with a known first name.
 const WEAK_INTRODUCTION = new RegExp(`\\b${ci("(?:i am|i'm|this is|je suis|ich bin|soy|sono)")}${H}+(${FULL_NAME})`, "dgu");
 const LABEL = new RegExp(`^${H}*(?:[-*•]${H}*)?(?:From|To|Cc|Bcc|Name|Full name|Contact|Contact person|Customer|Client|Patient|Applicant|Employee|Candidate|Traveler|Traveller|Passenger|Guest|Tenant|Landlord|Payee|Beneficiary|Recipient|Sender|Owner|Attendees|Participants|Signed|Signed by|Author|Assignee|Reporter|Interviewer|Account holder|Cardholder|Referral|Policyholder)${H}*:${H}*(.+)$`, "dgimu");
 const RELATION = new RegExp(`\\b${ci("(?:colleague|kolega|kolegyňa|coworker|co-worker|manager|boss|landlord|landlady|tenant|neighbou?r|wife|husband|partner|son|daughter|brother|sister|mother|father|mom|dad|friend|doctor|lawyer|attorney|accountant|contractor|interviewed|called|emailed|ask|msg to|message to|text|meeting with|met with|contact|policyholder|payee|recipient|signed by|reviewed by|approved by|sent by|written by|owned by|assigned to|cc)")}${H}+(${FULL_NAME})`, "dgu");
 const DICTIONARY_NAME = new RegExp(`(?<![\\p{L}'’-])(${FULL_NAME})`, "gu");
+// "I, Sabrina, am applying", "I, Jake Wiggins, authorize"
+const SELF_IDENTIFICATION = new RegExp(`(?:^|(?<=[\\s(]))I,${H}+(${ANY_NAME}),`, "dgmu");
+// Any capitalised word, for first names on their own.
+const CAPITALISED_WORD = /(?<![\p{L}\d'’-])\p{Lu}\p{Ll}{2,}(?![\p{L}\d'’-])/gu;
+const PLACE_WORDS = new Set(PLACE_NAMES.map((name) => normaliseName(name)));
 
 const ORG_SUFFIX = "(?:Inc\\.?|Incorporated|LLC|L\\.L\\.C\\.|Ltd\\.?|Limited|Corp\\.?|Corporation|GmbH|AG|KG|OHG|AS|ASA|AB|Oy|Oyj|ApS|A/S|SA|S\\.A\\.|SAS|SARL|S\\.r\\.l\\.|Srl|SpA|S\\.p\\.A\\.|BV|B\\.V\\.|NV|N\\.V\\.|plc|PLC|Pty(?:\\.? Ltd\\.?)?|LLP|LP|s\\.r\\.o\\.|spol\\. s r\\.o\\.|a\\.s\\.|Sp\\. z o\\.o\\.|sp\\. z o\\.o\\.|S\\.A\\.S\\.|Kft\\.?|Zrt\\.?|Co\\.|& Co\\.?|Group|Holdings)";
 const ORG_WORD = "(?:\\p{Lu}[\\p{L}\\d'’.-]*|&|and|und|of|the|de)";
@@ -128,19 +136,79 @@ function collectPeople(text, out) {
     }
   }
 
-  // A known first name followed by a surname.
+  for (const match of text.matchAll(SELF_IDENTIFICATION)) {
+    addName(out, match, 1, "high");
+  }
+
   for (const match of text.matchAll(DICTIONARY_NAME)) {
-    const words = match[1].split(/\s+/);
-    let startWord = 0;
-    while (startWord < words.length - 1 && !FIRST_NAMES.has(normaliseName(words[startWord]))) {
-      startWord += 1;
+    addDictionaryName(out, match);
+  }
+
+  // A first name on its own ("contact Emily at ..."): only next to other
+  // personal data, and never a name that is also a word ("Will", "Grace").
+  for (const match of text.matchAll(CAPITALISED_WORD)) {
+    const name = normaliseName(match[0]);
+    if (isFirstName(name) && !NAME_WORDS.has(name) && !NOT_NAME.has(name) && !PLACE_WORDS.has(name)) {
+      const index = /** @type {number} */ (match.index);
+      out.add(index, index + match[0].length, "PERSON", "people", "low", true);
     }
-    if (startWord >= words.length - 1 || NOT_NAME.has(normaliseName(words[startWord + 1]))) {
-      continue;
+  }
+}
+
+/** @param {string} name Normalised. */
+function isFirstName(name) {
+  return FIRST_NAMES.has(name) || COMMON_FIRST_NAMES.has(name);
+}
+
+/**
+ * Capitalised words that are a known first name and a surname ("Annabelle
+ * Creighton", "Jeremy J. Smith"), or an unknown first name and a known
+ * surname ("Zaitra Sarma").
+ * @param {Collector} out
+ * @param {RegExpMatchArray} match
+ */
+function addDictionaryName(out, match) {
+  const words = match[1].split(/\s+/);
+  const offsetOf = (/** @type {number} */ word) => /** @type {number} */ (match.index) + words.slice(0, word).reduce((sum, w) => sum + w.length + 1, 0);
+  const end = /** @type {number} */ (match.index) + match[1].length;
+
+  let first = 0;
+  while (first < words.length - 1 && !isFirstName(normaliseName(words[first]))) {
+    first += 1;
+  }
+  if (first < words.length - 1) {
+    // The surname: the next word that is not a middle initial.
+    const surnameWord = words.slice(first + 1).find((word) => !/^\p{Lu}\.$/u.test(word)) || "";
+    const firstName = normaliseName(words[first]);
+    const surname = normaliseName(surnameWord);
+    if (!surname || NOT_NAME.has(surname)) {
+      return;
     }
-    const prefix = words.slice(0, startWord).join(" ");
-    const start = /** @type {number} */ (match.index) + (prefix ? prefix.length + 1 : 0);
-    out.add(start, /** @type {number} */ (match.index) + match[1].length, "PERSON", "people", "medium");
+    const curated = FIRST_NAMES.has(firstName);
+    // First names only in the large list ("Harvard", "Lionel") need a known
+    // surname after them: "Harvard University" and "Lionel Messi" are not
+    // private people's names.
+    if (!curated && !SURNAMES.has(surname)) {
+      return;
+    }
+    // Names found only through the large lists count next to other personal
+    // data, like place names: "Donald Robinson, SSN ..." is redacted, "in
+    // the style of Warren Buffett" is not. So does a curated first name that
+    // is also a word before a word that is no surname ("Grace Period").
+    const confident = curated && !(NAME_WORDS.has(firstName) && !SURNAMES.has(surname));
+    out.add(offsetOf(first), end, "PERSON", "people", confident ? "medium" : "low", !confident);
+    return;
+  }
+
+  // No known first name: a capitalised word before a known surname that is
+  // not an ordinary word, next to other personal data.
+  for (let i = 1; i < words.length; i += 1) {
+    const surname = normaliseName(words[i]);
+    const given = normaliseName(words[i - 1]);
+    if (SURNAMES.has(surname) && !NAME_WORDS.has(surname) && !NAME_WORDS.has(given) && !NOT_NAME.has(given) && !PLACE_WORDS.has(given)) {
+      out.add(offsetOf(i - 1), offsetOf(i) + words[i].length, "PERSON", "people", "low", true);
+      return;
+    }
   }
 }
 

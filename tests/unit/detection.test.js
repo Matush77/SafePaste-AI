@@ -233,6 +233,33 @@ describe("labelled fields", () => {
   });
 });
 
+describe("names from public name lists", () => {
+  it("finds people who identify themselves", () => {
+    check("I, Sabrina, am applying for renewal.", { gone: ["Sabrina"], kept: ["am applying"] });
+    check("My first name is Manal and my last name is King.", { gone: ["Manal", "King"] });
+  });
+
+  it("keeps middle initials inside the name", () => {
+    check("Defendant: Jeremy J. Smith DOB: 1984-11-13", { gone: ["Jeremy", "J.", "Smith"] });
+  });
+
+  it("redacts list names next to other personal data, and every later mention", () => {
+    check("The policy is issued to Annabelle Creighton, born on 1966-09-16. Annabelle has no claims.", {
+      gone: ["Annabelle", "Creighton"],
+      kept: ["has no claims"]
+    });
+    check("Please contact Emily at emily.gaskins@gmail.com.", { gone: ["Emily", "emily.gaskins"] });
+  });
+
+  it("leaves list names alone without other personal data", () => {
+    const text = [
+      "Write a speech in the style of Warren Buffett.",
+      "The Grace Period ends Friday; the Rose Garden tour starts at noon."
+    ].join("\n");
+    expect(redact(text).text).toBe(text);
+  });
+});
+
 describe("record numbers, cards and places", () => {
   it("redacts prefixed record numbers without a label", () => {
     check("Upon review of patient record MRN-505536 and driver EMP730359.", { gone: ["MRN-505536", "EMP730359"] });

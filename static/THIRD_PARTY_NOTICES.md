@@ -11,6 +11,19 @@ Their licences are reproduced below.
 | [Transformers.js](https://github.com/huggingface/transformers.js) (`@huggingface/transformers`) | 4.3.0 | Apache-2.0 | Running the optional name model |
 | [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (`onnxruntime-web`, `onnxruntime-common`) | 1.31.0-dev.20260914-8d85527a0 | MIT | WebAssembly runtime for the optional name model |
 | [distilbert-NER](https://huggingface.co/dslim/distilbert-NER), ONNX conversion [onnx-community/distilbert-NER-ONNX](https://huggingface.co/onnx-community/distilbert-NER-ONNX) | revision 3a19fe9 | Apache-2.0 | The optional name model. Not included in the package: downloaded from Hugging Face only when the user turns on enhanced name detection. |
+| First names: US Social Security Administration baby names, 1880-2008, via [hadley/data-baby-names](https://github.com/hadley/data-baby-names) | commit b652557 | Public domain (US government work) | Recognising first names |
+| Surnames: US Census Bureau 2010 surnames, via [fivethirtyeight/data](https://github.com/fivethirtyeight/data/tree/master/most-common-name) | commit 4c1ff5e | Public domain data; the FiveThirtyEight compilation is CC BY 4.0 | Recognising surnames (the 20,000 most common) |
+| [ENABLE word list](https://github.com/dolph/dictionary) | commit c65f04b | Public domain | Marking names that are also ordinary words ("Will", "Grace") |
+
+## Name data
+
+The surname list is derived from "most-common-name/surnames.csv" by
+FiveThirtyEight (https://github.com/fivethirtyeight/data), licensed under the
+Creative Commons Attribution 4.0 International License
+(https://creativecommons.org/licenses/by/4.0/). SafePaste AI keeps only the
+20,000 most common surnames, lower-cased. The underlying data is from the US
+Census Bureau. The first names are from the US Social Security
+Administration and the word list from ENABLE; both are in the public domain.
 
 ## gitleaks
 
