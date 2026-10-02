@@ -1,18 +1,16 @@
 // Knows which sites are supported, which element on each site is the prompt
 // editor, and how to insert text into it so the site's editor picks it up.
 
+import { SITE_LIST } from "./shared/sites.js";
+
 /**
  * @typedef {object} Site
- * @property {"chatgpt"|"gemini"|"claude"} id
+ * @property {import("./shared/sites.js").SiteId} id
  * @property {string} name
  */
 
-/** @type {Record<string, Site>} */
-const SITES = {
-  "chatgpt.com": { id: "chatgpt", name: "ChatGPT" },
-  "gemini.google.com": { id: "gemini", name: "Gemini" },
-  "claude.ai": { id: "claude", name: "Claude" }
-};
+/** @type {Record<string, Site>} by hostname */
+const SITES = Object.fromEntries(SITE_LIST.flatMap(({ id, name, hosts }) => hosts.map((host) => [host, { id, name }])));
 
 /** @type {Record<Site["id"], string[]>} */
 const PROMPT_SELECTORS = {
@@ -39,16 +37,40 @@ const PROMPT_SELECTORS = {
     "[contenteditable='true'][aria-label*='message' i]",
     "[contenteditable='true'][aria-label*='prompt' i]",
     "[contenteditable='true'][data-placeholder*='reply' i]"
+  ],
+  // Lexical editor.
+  perplexity: [
+    "#ask-input",
+    "[data-lexical-editor='true'][contenteditable='true']"
+  ],
+  mistral: [
+    "div.ProseMirror[contenteditable='true']",
+    "[contenteditable='true'][data-placeholder]"
+  ],
+  // The visible prompt textarea; Grok also has an aria-hidden sizing copy.
+  grok: [
+    "textarea[aria-label]:not([aria-hidden='true'])",
+    "form textarea:not([aria-hidden='true'])"
   ]
 };
 
 // The AI's replies, newest last, for "Copy last reply with real values".
-/** @type {Record<Site["id"], string>} */
+// Sites not listed here still get real values when a reply is selected and
+// copied; only the one-click button needs the site's layout.
+/** @type {Partial<Record<Site["id"], string>>} */
 const REPLY_SELECTORS = {
   chatgpt: "[data-message-author-role='assistant']",
   gemini: "model-response message-content, model-response",
   claude: "[data-is-streaming] .font-claude-response, .font-claude-response, [data-is-streaming]"
 };
+
+/**
+ * Whether "Copy last reply" knows where this site's replies are.
+ * @param {Site} site
+ */
+export function knowsReplyLayout(site) {
+  return Boolean(REPLY_SELECTORS[site.id]);
+}
 
 /**
  * The most recent AI reply on the page, if the site's layout is known.
@@ -57,7 +79,8 @@ const REPLY_SELECTORS = {
  * @returns {HTMLElement | null}
  */
 export function lastReply(site, doc = document) {
-  const replies = doc.querySelectorAll(REPLY_SELECTORS[site.id]);
+  const selector = REPLY_SELECTORS[site.id];
+  const replies = selector ? doc.querySelectorAll(selector) : [];
   return replies.length ? /** @type {HTMLElement} */ (replies[replies.length - 1]) : null;
 }
 
@@ -134,7 +157,7 @@ export function siteForHostname(hostname) {
 }
 
 /** Names of the supported sites, e.g. for "Works on ChatGPT, Gemini and Claude". */
-export const SUPPORTED_SITE_NAMES = Object.values(SITES).map((site) => site.name);
+export const SUPPORTED_SITE_NAMES = SITE_LIST.filter((site) => !site.optional).map((site) => site.name);
 
 /**
  * The editable element an event is aimed at, looking through shadow roots.

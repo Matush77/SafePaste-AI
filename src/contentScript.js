@@ -8,7 +8,11 @@ import { currentSite } from "./siteAdapters.js";
 import { createVault } from "./vault.js";
 
 const site = currentSite();
-if (site) {
+// On optional sites the background worker also injects this script into tabs
+// that were open when the site was allowed; never install twice in a page.
+const alreadyInstalled = Boolean(/** @type {any} */ (globalThis).__safepasteInstalled);
+/** @type {any} */ (globalThis).__safepasteInstalled = true;
+if (site && !alreadyInstalled) {
   // Load the name model in the background so the first paste does not wait.
   chrome.storage.sync.get(SETTINGS_KEY).then((items) => {
     const stored = /** @type {{ nameModel?: boolean } | undefined} */ (items[SETTINGS_KEY]);

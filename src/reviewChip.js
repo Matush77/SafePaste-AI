@@ -8,7 +8,7 @@ import { editorText, replaceInEditor } from "./siteAdapters.js";
 /**
  * @typedef {import("./vault.js").Vault} Vault
  * @typedef {import("./vault.js").VaultEntry} VaultEntry
- * @typedef {{ count: () => number, lastReplyText: () => string | null }} Replies
+ * @typedef {{ count: () => number, lastReplyText: () => string | null, canCopyLastReply: () => boolean }} Replies
  */
 
 const MAX_SHOWN_LENGTH = 48;
@@ -117,7 +117,7 @@ export function createReviewChip({ vault, replies, settings, notify, doc = docum
     review.hidden = !hidden.length;
     review.textContent = `${hidden.length} hidden · Review`;
     review.setAttribute("aria-expanded", String(open && hidden.length > 0));
-    copy.hidden = !replyCount;
+    copy.hidden = !replyCount || !replies.canCopyLastReply();
 
     panel.hidden = !(open && hidden.length);
     const list = /** @type {HTMLElement} */ (root.querySelector(".items"));

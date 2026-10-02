@@ -7,12 +7,20 @@
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
-    "offscreen"
+    "offscreen",
+    "scripting",
+    "activeTab"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://gemini.google.com/*",
     "https://claude.ai/*"
+  ],
+  "optional_host_permissions": [
+    "https://www.perplexity.ai/*",
+    "https://perplexity.ai/*",
+    "https://chat.mistral.ai/*",
+    "https://grok.com/*"
   ],
   "background": {
     "service_worker": "background.js"

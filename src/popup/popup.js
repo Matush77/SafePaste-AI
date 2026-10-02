@@ -1,7 +1,8 @@
 import { mergeSettings } from "../redactor.js";
 import { MESSAGES, NAME_MODEL_SIZE_MB } from "../shared/nameModel.js";
 import { LAST_REDACTION_KEY, SETTINGS_KEY } from "../shared/storageKeys.js";
-import { SUPPORTED_SITE_NAMES, siteForHostname } from "../siteAdapters.js";
+import { OPTIONAL_SITES, SITE_LIST, originsOf, siteInfoForHostname } from "../shared/sites.js";
+import { SUPPORTED_SITE_NAMES } from "../siteAdapters.js";
 
 /**
  * @typedef {import("../redactor.js").Category} Category
@@ -69,10 +70,12 @@ const restoreValues = /** @type {HTMLInputElement} */ (byId("restoreValues"));
 const lastRedaction = byId("lastRedaction");
 const homeView = byId("homeView");
 const typesView = byId("typesView");
+const sitesView = byId("sitesView");
 
 let settings = mergeSettings();
-/** @type {import("../siteAdapters.js").Site | null} */
+/** @type {import("../shared/sites.js").SiteInfo | null} */
 let tabSite = null;
+let tabSiteAllowed = false;
 /** @type {NameModelStatus | null} */
 let modelStatus = null;
 // A one-off note shown while the feature is off, e.g. after deleting the download.
@@ -91,14 +94,16 @@ function init() {
   chrome.storage.local.get(LAST_REDACTION_KEY, (items) => {
     renderLastRedaction(sanitizeLastRedaction(/** @type {any} */ (items[LAST_REDACTION_KEY])));
   });
-  // The URL is only visible for tabs on the supported sites (the extension's
-  // host permissions), which is all the status line needs.
+  // Opening the popup grants activeTab, so the current tab's URL is visible
+  // even on an optional site SafePaste is not allowed on yet.
   chrome.tabs.query({ active: true, currentWindow: true })
-    .then(([tab]) => {
-      tabSite = tab && tab.url ? siteForHostname(new URL(tab.url).hostname) : null;
+    .then(async ([tab]) => {
+      tabSite = tab && tab.url ? siteInfoForHostname(new URL(tab.url).hostname) : null;
+      tabSiteAllowed = Boolean(tabSite) && (!tabSite?.optional || (await chrome.permissions.contains({ origins: originsOf(/** @type {import("../shared/sites.js").SiteInfo} */ (tabSite)) })));
       renderTabStatus();
     })
     .catch(() => renderTabStatus());
+  renderSites();
 
   enabled.addEventListener("change", () => updateSettings({ enabled: enabled.checked }));
   for (const input of sensitivityInputs) {
@@ -156,13 +161,16 @@ function init() {
     });
   }
 
-  byId("openTypes").addEventListener("click", () => showTypes(true));
-  byId("closeTypes").addEventListener("click", () => showTypes(false));
+  byId("openTypes").addEventListener("click", () => showView(typesView, byId("openTypes")));
+  byId("openSites").addEventListener("click", () => showView(sitesView, byId("openSites")));
+  for (const back of document.querySelectorAll("[data-back]")) {
+    back.addEventListener("click", () => showView(null));
+  }
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !byId("sheet").hidden) {
       closeSheet();
-    } else if (event.key === "Escape" && !typesView.hidden) {
-      showTypes(false);
+    } else if (event.key === "Escape" && openSub) {
+      showView(null);
     }
   });
 
@@ -301,8 +309,8 @@ function openSheet({ title, body, primary, secondary, opener, onPrimary, onSecon
   };
   layer.hidden = false;
   /** @type {any} */ (layer).opener = opener;
-  for (const view of [homeView, typesView]) {
-    view.inert = true;
+  for (const view of document.querySelectorAll(".view")) {
+    /** @type {HTMLElement} */ (view).inert = true;
   }
   // Keep the top of the sheet in view; focusing the button would scroll down.
   byId("sheet").querySelector(".sheet")?.scrollTo(0, 0);
@@ -312,36 +320,55 @@ function openSheet({ title, body, primary, secondary, opener, onPrimary, onSecon
 function closeSheet() {
   const layer = byId("sheet");
   layer.hidden = true;
-  const typesOpen = !typesView.hidden;
-  homeView.inert = typesOpen;
-  typesView.inert = !typesOpen;
+  homeView.inert = Boolean(openSub);
+  if (openSub) {
+    openSub.inert = false;
+  }
   const opener = /** @type {any} */ (layer).opener;
   if (opener) {
     opener.focus();
   }
 }
 
-/** @param {boolean} show */
-function showTypes(show) {
-  if (show) {
-    typesView.hidden = false;
-    typesView.inert = false;
+/** @type {HTMLElement | null} The open sub-screen ("AI sites", "What to redact"). */
+let openSub = null;
+/** @type {HTMLElement | null} */
+let subOpener = null;
+
+/**
+ * Slides a sub-screen in over the home screen, or back out (view = null).
+ * @param {HTMLElement | null} view
+ * @param {HTMLElement} [opener] Gets focus back when the screen closes.
+ */
+function showView(view, opener) {
+  if (view) {
+    openSub = view;
+    subOpener = opener || null;
+    view.hidden = false;
+    view.inert = false;
     homeView.inert = true;
     requestAnimationFrame(() => {
-      typesView.classList.add("here");
+      view.classList.add("here");
       homeView.classList.add("away");
-      /** @type {HTMLElement} */ (byId("closeTypes")).focus();
+      /** @type {HTMLElement} */ (view.querySelector("[data-back]")).focus();
     });
-  } else {
-    typesView.classList.remove("here");
-    homeView.classList.remove("away");
-    homeView.inert = false;
-    typesView.inert = true;
-    setTimeout(() => {
-      typesView.hidden = true;
-    }, 230);
-    byId("openTypes").focus();
+    return;
   }
+  const closing = openSub;
+  if (!closing) {
+    return;
+  }
+  openSub = null;
+  closing.classList.remove("here");
+  homeView.classList.remove("away");
+  homeView.inert = false;
+  closing.inert = true;
+  setTimeout(() => {
+    if (openSub !== closing) {
+      closing.hidden = true;
+    }
+  }, 230);
+  subOpener?.focus();
 }
 
 function renderTabStatus() {
@@ -349,12 +376,87 @@ function renderTabStatus() {
   if (!settings.enabled) {
     tabStatus.classList.add("paused");
     tabStatus.textContent = "Paused · pastes are not checked";
-  } else if (tabSite) {
+  } else if (tabSite && tabSiteAllowed) {
     tabStatus.classList.add("on");
     tabStatus.textContent = `Protecting this tab · ${tabSite.name}`;
+  } else if (tabSite) {
+    tabStatus.classList.add("paused");
+    tabStatus.textContent = `Off on ${tabSite.name} · turn it on in AI sites`;
   } else {
-    tabStatus.textContent = `Works on ${SUPPORTED_SITE_NAMES.join(", ")}`;
+    tabStatus.textContent = `Works on ${SUPPORTED_SITE_NAMES.join(", ")} and more`;
   }
+}
+
+/** The "AI sites" screen: built-in sites, and a switch per optional site. */
+async function renderSites() {
+  const builtIn = byId("builtInSites");
+  const optional = byId("optionalSites");
+  builtIn.textContent = "";
+  optional.textContent = "";
+  for (const site of SITE_LIST.filter((item) => !item.optional)) {
+    builtIn.append(siteRow(site, null));
+  }
+  let on = 0;
+  for (const site of OPTIONAL_SITES) {
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "switch";
+    input.setAttribute("role", "switch");
+    input.setAttribute("aria-label", `SafePaste on ${site.name}`);
+    input.checked = await chrome.permissions.contains({ origins: originsOf(site) });
+    on += input.checked ? 1 : 0;
+    // Chrome shows its own "Allow SafePaste on ..." prompt; the background
+    // worker then starts protecting the site, including open tabs.
+    input.addEventListener("change", async () => {
+      const origins = originsOf(site);
+      const now = input.checked
+        ? await chrome.permissions.request({ origins }).catch(() => false)
+        : !(await chrome.permissions.remove({ origins }).catch(() => false));
+      input.checked = now;
+      if (tabSite && tabSite.id === site.id) {
+        tabSiteAllowed = now;
+        renderTabStatus();
+      }
+      renderSitesCount();
+    });
+    optional.append(siteRow(site, input));
+  }
+  renderSitesCount(on);
+}
+
+/**
+ * @param {import("../shared/sites.js").SiteInfo} site
+ * @param {HTMLInputElement | null} control A switch, or null for always on.
+ */
+function siteRow(site, control) {
+  const row = document.createElement(control ? "label" : "div");
+  row.className = "row plain";
+  const text = document.createElement("span");
+  text.className = "row-text";
+  const name = document.createElement("span");
+  name.className = "row-title";
+  name.textContent = site.name;
+  const host = document.createElement("span");
+  host.className = "site-host";
+  host.textContent = site.hosts[site.hosts.length - 1];
+  text.append(name, host);
+  row.append(text);
+  if (control) {
+    row.append(control);
+  } else {
+    const state = document.createElement("span");
+    state.className = "state";
+    state.textContent = "On";
+    row.append(state);
+  }
+  return row;
+}
+
+/** @param {number} [optionalOn] */
+function renderSitesCount(optionalOn) {
+  const on = optionalOn ?? [...byId("optionalSites").querySelectorAll("input")].filter((input) => /** @type {HTMLInputElement} */ (input).checked).length;
+  const builtIn = SITE_LIST.length - OPTIONAL_SITES.length;
+  byId("sitesCount").textContent = `${builtIn + on} of ${SITE_LIST.length} on${on ? "" : ` · ${OPTIONAL_SITES.map((site) => site.name.split(" ")[0]).join(", ")} available`}`;
 }
 
 function renderCategoryControls() {

@@ -13,6 +13,7 @@ import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as esbuild from "esbuild";
 import { zipSync } from "fflate";
+import { SITE_LIST, originsOf } from "../src/shared/sites.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const staticDir = join(root, "static");
@@ -126,6 +127,22 @@ function validatePackage(manifest) {
 
   if ((manifest.permissions || []).includes("clipboardWrite") || (manifest.permissions || []).includes("clipboardRead")) {
     problems.push("clipboard permissions are not needed and must not be requested");
+  }
+
+  // The manifest's site lists must match src/shared/sites.js.
+  /** @param {string[]} list */
+  const sorted = (list) => [...list].sort().join(" ");
+  const builtIn = SITE_LIST.filter((site) => !site.optional).flatMap(originsOf);
+  const optional = SITE_LIST.filter((site) => site.optional).flatMap(originsOf);
+  if (sorted(manifest.host_permissions || []) !== sorted(builtIn)) {
+    problems.push(`host_permissions must be the built-in sites: ${builtIn.join(", ")}`);
+  }
+  if (sorted(manifest.optional_host_permissions || []) !== sorted(optional)) {
+    problems.push(`optional_host_permissions must be the optional sites: ${optional.join(", ")}`);
+  }
+  const scriptMatches = (manifest.content_scripts || []).flatMap((/** @type {any} */ script) => script.matches || []);
+  if (sorted(scriptMatches) !== sorted(builtIn)) {
+    problems.push("content_scripts must match the built-in sites; optional sites are registered at run time");
   }
 
   const referenced = [

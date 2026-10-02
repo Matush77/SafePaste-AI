@@ -1,8 +1,20 @@
-// Background service worker. Its only job is the optional name-detection
+// Background service worker. It keeps the content script registered on the
+// optional sites the user has allowed, and runs the optional name-detection
 // model: it creates the offscreen document that runs the model and forwards
 // requests from content scripts and the popup to it.
 
 import { MESSAGES, NAME_MODEL_READY_KEY, OFFSCREEN_TARGET } from "./shared/nameModel.js";
+import { syncSiteScripts } from "./siteRegistration.js";
+
+// Optional sites (Perplexity, Grok...): register the content script where
+// the user has allowed it.
+const sync = () => {
+  syncSiteScripts(/** @type {any} */ (chrome)).catch((error) => console.warn("SafePaste: could not update site scripts", error));
+};
+chrome.runtime.onInstalled.addListener(sync);
+chrome.runtime.onStartup.addListener(sync);
+chrome.permissions.onAdded.addListener(sync);
+chrome.permissions.onRemoved.addListener(sync);
 
 const OFFSCREEN_URL = "offscreen.html";
 const FORWARDED = new Set([MESSAGES.detect, MESSAGES.prepare, MESSAGES.status]);

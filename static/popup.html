@@ -64,6 +64,14 @@
 
           <h2 class="group-title">Detection</h2>
           <div class="group">
+            <button id="openSites" class="row nav" type="button">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M2.75 10h14.5M10 2.75c2 2.1 3 4.5 3 7.25s-1 5.15-3 7.25c-2-2.1-3-4.5-3-7.25s1-5.15 3-7.25Z"/></svg></span>
+              <span class="row-text">
+                <span class="row-title">AI sites</span>
+                <span id="sitesCount" class="row-desc"></span>
+              </span>
+              <svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg>
+            </button>
             <button id="openTypes" class="row nav" type="button">
               <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7 5.5h9.5M7 10h9.5M7 14.5h9.5"/><circle cx="3.75" cy="5.5" r=".9"/><circle cx="3.75" cy="10" r=".9"/><circle cx="3.75" cy="14.5" r=".9"/></svg></span>
               <span class="row-text">
@@ -80,10 +88,23 @@
           </div>
         </section>
 
-        <!-- What to redact -->
-        <section id="typesView" class="view" aria-labelledby="typesTitle" hidden>
+        <!-- AI sites -->
+        <section id="sitesView" class="view sub" aria-labelledby="sitesTitle" hidden>
           <div class="subhead">
-            <button id="closeTypes" class="back" type="button" aria-label="Back"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+            <button class="back" type="button" data-back aria-label="Back"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+            <h2 id="sitesTitle">AI sites</h2>
+          </div>
+          <h2 class="group-title">Always on</h2>
+          <div id="builtInSites" class="group"></div>
+          <h2 class="group-title">Turn on per site</h2>
+          <div id="optionalSites" class="group"></div>
+          <p class="hint side-hint">Chrome asks you once before SafePaste works on a new site. There it only checks text you paste or drop into the prompt box, the same as on ChatGPT.</p>
+        </section>
+
+        <!-- What to redact -->
+        <section id="typesView" class="view sub" aria-labelledby="typesTitle" hidden>
+          <div class="subhead">
+            <button id="closeTypes" class="back" type="button" data-back aria-label="Back"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
             <h2 id="typesTitle">What to redact</h2>
           </div>
           <div id="categories"></div>

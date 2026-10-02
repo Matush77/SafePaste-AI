@@ -8,7 +8,7 @@
 // - copying a selection puts the text on the clipboard with real values;
 // - copyLastReply() does the same for the newest reply.
 
-import { lastReply } from "./siteAdapters.js";
+import { knowsReplyLayout, lastReply } from "./siteAdapters.js";
 
 /**
  * @typedef {import("./vault.js").Vault} Vault
@@ -189,6 +189,11 @@ export function installReplyAssist({ vault, site, isEnabled, notify, onChange = 
         total += list.length;
       }
       return total;
+    },
+
+    /** Whether "Copy reply with real values" can find this site's replies. */
+    canCopyLastReply() {
+      return knowsReplyLayout(site);
     },
 
     /** The newest reply's text with real values, or null. */

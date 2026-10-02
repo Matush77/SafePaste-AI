@@ -29,6 +29,25 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
+describe("optional sites", () => {
+  it("are recognised by hostname", () => {
+    expect(currentSite(at("www.perplexity.ai"), document)?.id).toBe("perplexity");
+    expect(currentSite(at("chat.mistral.ai"), document)?.id).toBe("mistral");
+    expect(currentSite(at("grok.com"), document)?.id).toBe("grok");
+  });
+
+  it("find each site's prompt editor as seen on the live sites", () => {
+    const perplexity = mount(`<div id="ask-input" contenteditable="true" role="textbox" data-lexical-editor="true"><p data-target>hi</p></div>`);
+    expect(promptEditableFromEvent(eventAt(perplexity), { id: "perplexity", name: "Perplexity" })?.id).toBe("ask-input");
+
+    const mistral = mount(`<div class="ProseMirror" contenteditable="true" data-placeholder="Ask anything" data-target></div>`);
+    expect(promptEditableFromEvent(eventAt(mistral), { id: "mistral", name: "Mistral Le Chat" })).toBe(mistral);
+
+    const grok = mount(`<form><textarea aria-label="Ask Grok anything" data-target></textarea></form><textarea aria-hidden="true" tabindex="-1"></textarea>`);
+    expect(promptEditableFromEvent(eventAt(grok), { id: "grok", name: "Grok" })).toBe(grok);
+  });
+});
+
 describe("promptEditableFromEvent", () => {
   it("finds the ChatGPT textarea and ProseMirror editors", () => {
     const textarea = mount(`<textarea id="prompt-textarea" data-target></textarea>`);

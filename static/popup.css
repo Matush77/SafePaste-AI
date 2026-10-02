@@ -183,12 +183,28 @@ h1 {
   opacity: 0;
 }
 
-#typesView {
+.view.sub {
   transform: translateX(100%);
 }
 
-#typesView.here {
+.view.sub.here {
   transform: none;
+}
+
+.side-hint {
+  margin: 10px 2px 0;
+}
+
+.state {
+  flex: none;
+  color: var(--ok);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.site-host {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 /* Groups and rows */
