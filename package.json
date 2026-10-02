@@ -43,5 +43,8 @@
   },
   "dependencies": {
     "libphonenumber-js": "^1.13.14"
+  },
+  "overrides": {
+    "onnxruntime-web": "1.30.0"
   }
 }

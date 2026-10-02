@@ -44,7 +44,14 @@ const extensionBuild = {
 // The offscreen document runs the optional name model with transformers.js.
 // It is an ES module because the ONNX runtime loads its WebAssembly glue
 // with a dynamic import.
-const onnxWasmOnly = join(root, "node_modules", "onnxruntime-web", "dist", "ort.wasm.min.mjs");
+// The ONNX runtime that transformers.js uses: a stable release pinned in
+// package.json "overrides" (transformers.js itself pins a dev build), which
+// npm may install inside transformers.js's own node_modules.
+const ortDist = [
+  join(root, "node_modules", "@huggingface", "transformers", "node_modules", "onnxruntime-web", "dist"),
+  join(root, "node_modules", "onnxruntime-web", "dist")
+].find((dir) => existsSync(dir)) || "";
+const onnxWasmOnly = join(ortDist, "ort.wasm.min.mjs");
 /** @type {esbuild.BuildOptions} */
 const offscreenBuild = {
   entryPoints: { offscreen: join(root, "src", "offscreen", "offscreen.js") },
@@ -98,9 +105,10 @@ async function main() {
 
   await esbuild.build(extensionBuild);
   await esbuild.build(offscreenBuild);
+  pointRuntimeDefaultsAtPackage();
   mkdirSync(join(outDir, "ort"), { recursive: true });
   for (const file of ONNX_RUNTIME_FILES) {
-    cpSync(join(root, "node_modules", "onnxruntime-web", "dist", file), join(outDir, "ort", file));
+    cpSync(join(ortDist, file), join(outDir, "ort", file));
   }
   validatePackage(manifest);
 
@@ -122,9 +130,34 @@ function readManifest() {
   return manifest;
 }
 
+/**
+ * transformers.js defaults the ONNX runtime's WebAssembly location to a CDN
+ * (jsDelivr). SafePaste always sets it to the copy in the package before
+ * anything loads, and the extension's CSP would block a remote script anyway,
+ * but the package should not contain a remote-code address at all, so the
+ * default is rewritten to the packaged copy.
+ */
+function pointRuntimeDefaultsAtPackage() {
+  const file = join(outDir, "offscreen.js");
+  const source = readFileSync(file, "utf8");
+  const cdnDefault = /`https:\/\/cdn\.jsdelivr\.net\/npm\/onnxruntime-web@\$\{[^}`]+\}\/dist\/`/g;
+  const matches = source.match(cdnDefault) || [];
+  if (matches.length !== 1) {
+    throw new Error(`Expected one CDN default for the ONNX runtime in offscreen.js, found ${matches.length}; update pointRuntimeDefaultsAtPackage().`);
+  }
+  writeFileSync(file, source.replace(cdnDefault, "chrome.runtime.getURL(\"ort/\")"));
+}
+
 /** @param {any} manifest */
 function validatePackage(manifest) {
   const problems = [];
+
+  // No code may be loaded from a CDN (Chrome Web Store remote-code policy).
+  for (const file of Object.keys(collectFiles(outDir))) {
+    if (/\.(m?js|html)$/.test(file) && /https?:\/\/(?:cdn\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|esm\.sh|cdn\.skypack\.dev)/.test(readFileSync(join(outDir, file), "utf8"))) {
+      problems.push(`remote code address (CDN) found in ${file}`);
+    }
+  }
 
   if ((manifest.permissions || []).includes("clipboardWrite") || (manifest.permissions || []).includes("clipboardRead")) {
     problems.push("clipboard permissions are not needed and must not be requested");
