@@ -145,11 +145,25 @@ export function editableFromEvent(event) {
   const path = typeof event.composedPath === "function" ? event.composedPath() : [];
   for (const node of path) {
     if (isEditable(node)) {
-      return /** @type {HTMLElement} */ (node);
+      return editingHost(/** @type {HTMLElement} */ (node));
     }
   }
 
-  return deepestActiveEditable(document);
+  const active = deepestActiveEditable(document);
+  return active ? editingHost(active) : null;
+}
+
+/**
+ * The whole editor, not the paragraph the caret is in: inside a rich editor
+ * (Gemini's Quill, ProseMirror) every line is editable too.
+ * @param {HTMLElement} element
+ */
+function editingHost(element) {
+  let host = element;
+  while (host.tagName !== "TEXTAREA" && host.parentElement && isEditable(host.parentElement)) {
+    host = host.parentElement;
+  }
+  return host;
 }
 
 /**

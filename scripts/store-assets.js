@@ -29,7 +29,7 @@ const outDir = join(root, "store-assets");
 const iconDir = join(root, "static", "assets");
 const extensionPath = join(root, "dist", "safepaste-ai");
 const captureDir = join(root, "store-assets", "captures");
-const CAPTURE_FILES = ["customer", "customer-notice", "code", "code-notice", "popup"];
+const CAPTURE_FILES = ["customer", "code", "popup"];
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 
 const logo = readFileSync(join(brandDir, "logo.svg"), "utf8");
@@ -149,8 +149,9 @@ async function captureGemini() {
           const rect = (node || element).getBoundingClientRect();
           return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
         });
-        await page.screenshot({ path: join(captureDir, `${name}.png`), clip: { x: card.x - 16, y: card.y - 16, width: card.width + 32, height: card.height + 32 } });
-        await page.locator("[role='status']", { hasText: "SafePaste AI" }).last().screenshot({ path: join(captureDir, `${name}-notice.png`) });
+        // Includes SafePaste's "hidden · Review" chip, which overlaps the top of the prompt box.
+        await page.waitForTimeout(400);
+        await page.screenshot({ path: join(captureDir, `${name}.png`), clip: { x: card.x - 16, y: card.y - 34, width: card.width + 32, height: card.height + 50 } });
       }
     } finally {
       await clear();
@@ -160,6 +161,8 @@ async function captureGemini() {
     const popup = await context.newPage();
     await popup.setViewportSize({ width: 360, height: 560 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+    // A scrollbar is noise in a store image.
+    await popup.addStyleTag({ content: ".view { scrollbar-width: none; }" });
     await popup.waitForTimeout(600);
     await popup.locator(".app").screenshot({ path: join(captureDir, "popup.png") });
   } finally {
@@ -207,6 +210,7 @@ async function captureDemo() {
 
     await page.setViewportSize({ width: 360, height: 560 });
     await page.goto(`chrome-extension://${extensionId}/popup.html`);
+    await page.addStyleTag({ content: ".view { scrollbar-width: none; }" });
     await page.waitForTimeout(500);
     const popup = `data:image/png;base64,${(await page.locator(".app").screenshot()).toString("base64")}`;
     return { customer, code, popup };
@@ -374,7 +378,7 @@ function baseCss() {
   .points li::before { content: ""; position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: ${COLORS.mint}; box-shadow: inset 0 0 0 6px #D1FAE5; }
   .points b { color: ${COLORS.ink}; }
   .popup-shot { justify-content: center; gap: 90px; }
-  .popup img { width: 380px; display: block; border-radius: 16px; box-shadow: 0 24px 60px rgba(27, 30, 94, 0.2); max-height: 690px; object-fit: cover; object-position: top; -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 100%); }
+  .popup img { width: 380px; display: block; border-radius: 16px; box-shadow: 0 24px 60px rgba(27, 30, 94, 0.2); max-height: 690px; object-fit: cover; object-position: top; border: 1px solid ${COLORS.line}; }
   .privacy { flex-direction: column; align-items: flex-start; justify-content: center; }
   .privacy h1 { max-width: 900px; }
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; width: 100%; }

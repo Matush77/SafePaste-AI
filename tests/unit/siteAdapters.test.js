@@ -48,7 +48,8 @@ describe("promptEditableFromEvent", () => {
 
   it("finds the editor when the event targets a paragraph inside it", () => {
     const paragraph = mount(`<div class="ProseMirror" contenteditable="true"><p data-target>hi</p></div>`);
-    expect(promptEditableFromEvent(eventAt(paragraph), chatgpt)).toBe(paragraph);
+    // The whole editor, not the line: the review chip and Unhide need all of it.
+    expect(promptEditableFromEvent(eventAt(paragraph), chatgpt)).toBe(paragraph.closest(".ProseMirror"));
   });
 
   it("ignores inputs and unrelated editable areas", () => {

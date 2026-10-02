@@ -249,11 +249,10 @@ function createPeek(doc) {
     host = doc.createElement("safepaste-ui");
     const root = host.attachShadow({ mode: "closed" });
     root.innerHTML = `<style>
-      .card { position: fixed; z-index: 2147483647; max-width: 360px; padding: 8px 11px; border-radius: 10px;
-        background: #12142b; color: #fff; font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28); pointer-events: none; }
-      .value { font-weight: 600; word-break: break-word; }
-      .note { color: #b8bce6; font-size: 11.5px; margin-top: 2px; }
+      .card { position: fixed; z-index: 2147483647; max-width: 360px; padding: 8px 11px; border: 1px solid #3a3c48; border-radius: 8px;
+        background: #15161e; color: #f2f3f7; font: 13px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; pointer-events: none; }
+      .value { font-weight: 700; word-break: break-word; }
+      .note { margin-top: 2px; color: #c5c8d4; font-size: 12px; }
     </style><div class="card" hidden><div class="value"></div><div class="note"></div></div>`;
     card = /** @type {HTMLElement} */ (root.querySelector(".card"));
     doc.documentElement.append(host);

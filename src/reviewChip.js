@@ -177,13 +177,42 @@ export function createReviewChip({ vault, replies, settings, notify, doc = docum
     }
   }
 
+  /** @type {MutationObserver | null} */
+  let contentWatcher = null;
+  /** @type {ResizeObserver | null} */
+  let sizeWatcher = null;
+  let renderQueued = false;
+
+  /** Re-reads the prompt box once its editor has finished updating. */
+  function queueRender() {
+    if (!renderQueued) {
+      renderQueued = true;
+      win.requestAnimationFrame(() => {
+        renderQueued = false;
+        render();
+      });
+    }
+  }
+
   return {
     /**
-     * The prompt box the last paste went into.
+     * The prompt box the last paste went into. Rich editors (Gemini's
+     * Quill, ProseMirror) finish inserting multi-line text after the paste
+     * and grow as they do, so the chip follows the box's content and size.
      * @param {HTMLElement} element
      */
     setEditor(element) {
-      editor = element;
+      if (editor !== element) {
+        contentWatcher?.disconnect();
+        sizeWatcher?.disconnect();
+        editor = element;
+        contentWatcher = new MutationObserver(queueRender);
+        contentWatcher.observe(element, { subtree: true, childList: true, characterData: true });
+        if (typeof ResizeObserver === "function") {
+          sizeWatcher = new ResizeObserver(() => position());
+          sizeWatcher.observe(element);
+        }
+      }
       render();
     },
     render
@@ -191,33 +220,31 @@ export function createReviewChip({ vault, replies, settings, notify, doc = docum
 }
 
 const CSS = `
-  .chip { position: fixed; z-index: 2147483646; font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; color: #12142b; }
-  .bar { display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #dee1f0; border-radius: 999px;
-    padding: 4px 6px 4px 8px; box-shadow: 0 6px 18px rgba(18, 20, 43, 0.14); }
-  .mark { width: 14px; height: 16px; border-radius: 3px; background: #2e3192; position: relative; flex: 0 0 auto; }
-  .mark::after { content: ""; position: absolute; left: 3px; right: 3px; top: 7px; height: 3px; background: #fff; border-radius: 1px; }
-  button { font: inherit; cursor: pointer; border: 0; border-radius: 999px; padding: 4px 10px; }
-  .review { background: #eef0f8; color: #2e3192; font-weight: 600; }
-  .copy { background: #2e3192; color: #fff; font-weight: 600; }
-  button:focus-visible { outline: 2px solid #2e3192; outline-offset: 2px; }
-  .panel { position: absolute; right: 0; bottom: calc(100% + 8px); width: 340px; max-height: 320px; overflow: auto; background: #fff;
-    border: 1px solid #dee1f0; border-radius: 12px; box-shadow: 0 12px 32px rgba(18, 20, 43, 0.18); padding: 10px 12px; }
-  .panel-title { font-weight: 700; margin-bottom: 6px; }
+  .chip { --surface: #ffffff; --border: #c9ccd8; --line: #e4e5eb; --text: #15161e; --muted: #464a59;
+    --accent: #3034a6; --accent-soft: #e7e8fa; --on-accent: #ffffff;
+    position: fixed; z-index: 2147483646; color: var(--text); font: 13px/1.35 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .bar { display: flex; align-items: center; gap: 6px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; }
+  .mark { position: relative; flex: none; width: 22px; height: 22px; margin-left: 2px; border-radius: 6px; background: var(--accent); }
+  .mark::before { content: ""; position: absolute; left: 6px; top: 5px; width: 10px; height: 12px; border-radius: 2px; background: var(--on-accent); }
+  .mark::after { content: ""; position: absolute; left: 8px; top: 10px; width: 6px; height: 3px; background: var(--accent); }
+  button { font: inherit; font-weight: 700; cursor: pointer; border: 1px solid transparent; border-radius: 6px; padding: 4px 10px; }
+  .review { background: var(--accent-soft); color: var(--accent); }
+  .copy { background: var(--accent); color: var(--on-accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .panel { position: absolute; right: 0; bottom: calc(100% + 6px); width: 340px; max-height: 320px; overflow: auto; padding: 12px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .panel-title { margin-bottom: 6px; font-weight: 700; }
   .items { list-style: none; margin: 0; padding: 0; }
-  .items li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #eef0f8; }
+  .items li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); }
   .items li:first-child { border-top: 0; }
-  .type { font: 600 11px ui-monospace, Consolas, monospace; color: #2e3192; background: #eef0f8; border-radius: 5px; padding: 2px 6px; text-transform: uppercase; }
+  .type { padding: 2px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font: 700 11px ui-monospace, Consolas, monospace; text-transform: uppercase; }
   .value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .items button { background: #fff; border: 1px solid #dee1f0; color: #2e3192; padding: 3px 9px; font-size: 12px; }
-  .panel-note { color: #5b6078; font-size: 11.5px; margin-top: 8px; }
+  .items button { padding: 3px 9px; background: var(--surface); border-color: var(--border); color: var(--accent); font-size: 12px; }
+  .items button:hover { border-color: var(--accent); }
+  .panel-note { margin-top: 8px; color: var(--muted); font-size: 12px; }
   [hidden] { display: none !important; }
   @media (prefers-color-scheme: dark) {
-    .bar, .panel { background: #1e2039; border-color: #2f3252; }
-    .chip { color: #eceefa; }
-    .review, .type { background: #2a2d4d; color: #a9adf5; }
-    .copy { background: #8a8ff0; color: #14152a; }
-    .items li { border-color: #2f3252; }
-    .items button { background: #1e2039; border-color: #2f3252; color: #a9adf5; }
-    .panel-note { color: #a6aac4; }
+    .chip { --surface: #18191f; --border: #3a3c48; --line: #262832; --text: #f2f3f7; --muted: #c5c8d4;
+      --accent: #a7abff; --accent-soft: #272a4f; --on-accent: #0e0f14; }
   }
 `;
