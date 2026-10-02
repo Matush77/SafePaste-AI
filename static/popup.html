@@ -7,95 +7,119 @@
     <link rel="stylesheet" href="popup.css">
   </head>
   <body>
-    <main>
-      <header class="card header">
-        <div class="brand">
-          <img class="brand-mark" src="assets/logo.svg" alt="" width="36" height="36">
-          <div>
-            <h1>SafePaste AI</h1>
-            <p id="tabStatus" class="status" role="status"></p>
-          </div>
+    <div class="app">
+      <header class="top">
+        <img class="logo" src="assets/logo.svg" alt="" width="32" height="32">
+        <div class="top-text">
+          <h1>SafePaste AI</h1>
+          <p id="tabStatus" class="status" role="status"></p>
         </div>
-        <input id="enabled" class="switch" type="checkbox" role="switch" aria-label="Enabled">
+        <input id="enabled" class="switch" type="checkbox" role="switch" aria-label="Protection on">
       </header>
 
-      <section class="card" aria-labelledby="levelTitle">
-        <h2 id="levelTitle">Protection level</h2>
-        <div id="sensitivity" class="segmented" role="radiogroup" aria-labelledby="levelTitle" aria-describedby="sensitivityHint">
-          <label><input type="radio" name="sensitivity" value="balanced"><span>Balanced</span></label>
-          <label><input type="radio" name="sensitivity" value="strict"><span>Strict</span></label>
-        </div>
-        <p id="sensitivityHint" class="hint"></p>
-      </section>
+      <div class="views">
+        <!-- Home -->
+        <section id="homeView" class="view" aria-label="Settings">
+          <h2 class="group-title" id="levelTitle">Protection level</h2>
+          <div class="group pad">
+            <div id="sensitivity" class="segmented" role="radiogroup" aria-labelledby="levelTitle" aria-describedby="sensitivityHint">
+              <label><input type="radio" name="sensitivity" value="balanced"><span>Balanced</span></label>
+              <label><input type="radio" name="sensitivity" value="strict"><span>Strict</span></label>
+            </div>
+            <p id="sensitivityHint" class="hint fixed-2"></p>
+          </div>
 
-      <section class="card">
-        <div class="row">
-          <label for="nameModel" class="row-text">
-            <span class="row-title">Enhanced name detection</span>
-            <span class="hint">On-device AI finds names the rules miss. About 66 MB, downloaded once.</span>
-          </label>
-          <input id="nameModel" class="switch" type="checkbox" role="switch" aria-describedby="nameModelStatus">
-        </div>
-        <button id="nameModelInfoToggle" class="info-toggle" type="button" aria-expanded="false" aria-controls="nameModelInfo">How it works</button>
-        <div id="nameModelInfo" class="info" hidden>
-          <dl>
-            <dt>What it is</dt>
-            <dd>An English name-recognition model (DistilBERT, fine-tuned to find people, organisations and places), about 66 MB.</dd>
-            <dt>Where it comes from</dt>
-            <dd>Downloaded once from Hugging Face (huggingface.co) when you turn this on. SafePaste only accepts one fixed version of the model and checks every file against its known fingerprint (SHA-256) before using it.</dd>
-            <dt>Where it is kept</dt>
-            <dd>In this browser's cache for SafePaste, on your device. Turning the feature off keeps the download so it can be turned on again instantly; removing the extension deletes it.</dd>
-            <dt>How it is used</dt>
-            <dd>When you paste into a supported AI chat, the text is checked by the model on your device, together with the built-in rules. Pasted text is never sent to Hugging Face or anyone else. The download request contains no personal data, but like any download it shows your IP address to Hugging Face.</dd>
-            <dt>If it fails</dt>
-            <dd>If the model cannot load or answer in time, pastes are still redacted with the built-in rules, and the notice tells you so.</dd>
-          </dl>
-          <a href="privacy.html" target="_blank">Privacy policy</a>
-        </div>
-        <div id="nameModelStatus" class="model-status" role="status" aria-live="polite"></div>
-      </section>
+          <h2 class="group-title">Features</h2>
+          <div class="group">
+            <div class="row">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="12" rx="2.5"/><path d="M6.5 8.5h7M6.5 11.5h4"/></svg></span>
+              <label class="row-text" for="showToast">
+                <span class="row-title">Show what was hidden</span>
+                <span class="row-desc">Lists what each paste hid</span>
+              </label>
+              <button class="info" type="button" data-info="notice" aria-label="About Show what was hidden"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v4.5M10 6.6v.1"/></svg></button>
+              <input id="showToast" class="switch" type="checkbox" role="switch">
+            </div>
+            <div class="row">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2.5 10s2.8-5 7.5-5 7.5 5 7.5 5-2.8 5-7.5 5-7.5-5-7.5-5Z"/><circle cx="10" cy="10" r="2.25"/></svg></span>
+              <label class="row-text" for="restoreValues">
+                <span class="row-title">Real values in replies</span>
+                <span class="row-desc">Hover to see, copy to get</span>
+              </label>
+              <button class="info" type="button" data-info="restore" aria-label="About Real values in replies"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v4.5M10 6.6v.1"/></svg></button>
+              <input id="restoreValues" class="switch" type="checkbox" role="switch">
+            </div>
+            <div class="row">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="3"/><path d="M4 16.5c.9-3 3.2-4.5 6-4.5s5.1 1.5 6 4.5"/></svg></span>
+              <div class="row-text">
+                <label class="row-title" for="nameModel">Enhanced name detection</label>
+                <span class="row-desc">On-device AI · 66 MB download</span>
+                <span id="nameModelStatus" class="row-status" role="status" aria-live="polite"></span>
+              </div>
+              <button class="info" type="button" data-info="model" aria-label="About Enhanced name detection"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v4.5M10 6.6v.1"/></svg></button>
+              <input id="nameModel" class="switch" type="checkbox" role="switch" aria-describedby="nameModelStatus">
+              <div class="progress" hidden><div></div></div>
+            </div>
+          </div>
 
-      <section class="card">
-        <div class="row">
-          <label for="restoreValues" class="row-text">
-            <span class="row-title">Real values in replies</span>
-            <span class="hint">Hover a placeholder to see what it hides; copying a reply fills the real values back in. They stay in that tab only.</span>
-          </label>
-          <input id="restoreValues" class="switch" type="checkbox" role="switch">
-        </div>
-      </section>
+          <h2 class="group-title">Detection</h2>
+          <div class="group">
+            <button id="openTypes" class="row nav" type="button">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7 5.5h9.5M7 10h9.5M7 14.5h9.5"/><circle cx="3.75" cy="5.5" r=".9"/><circle cx="3.75" cy="10" r=".9"/><circle cx="3.75" cy="14.5" r=".9"/></svg></span>
+              <span class="row-text">
+                <span class="row-title">What to redact</span>
+                <span id="typesCount" class="row-desc"></span>
+              </span>
+              <svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg>
+            </button>
+          </div>
 
-      <details id="types" class="card types">
-        <summary>
-          <h2>What to redact</h2>
-          <span id="typesCount" class="hint"></span>
-        </summary>
-        <div id="categories"></div>
-      </details>
+          <h2 class="group-title">Last paste</h2>
+          <div class="group pad">
+            <div id="lastRedaction" class="last"></div>
+          </div>
+        </section>
 
-      <section class="card">
-        <h2>Last paste</h2>
-        <div id="lastRedaction" class="last"></div>
-      </section>
+        <!-- What to redact -->
+        <section id="typesView" class="view" aria-labelledby="typesTitle" hidden>
+          <div class="subhead">
+            <button id="closeTypes" class="back" type="button" aria-label="Back"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+            <h2 id="typesTitle">What to redact</h2>
+          </div>
+          <div id="categories"></div>
 
-      <footer class="footer">
-        <label class="inline">
-          <span>Placeholders</span>
-          <select id="placeholderStyle">
-            <option value="typed">[[TYPE_1]]</option>
-            <option value="compact">[TYPE_1]</option>
-          </select>
-        </label>
-        <label class="inline">
-          <span>Show what was hidden</span>
-          <input id="showToast" class="switch small" type="checkbox" role="switch">
-        </label>
-        <nav class="links">
-          <a href="privacy.html" target="_blank">Privacy</a>
-          <a href="THIRD_PARTY_NOTICES.md" target="_blank">Licences</a>
-        </nav>
+          <h2 class="group-title">Placeholders</h2>
+          <div class="group pad">
+            <div class="field">
+              <label for="placeholderStyle">Style</label>
+              <select id="placeholderStyle">
+                <option value="typed">[[EMAIL_1]]</option>
+                <option value="compact">[EMAIL_1]</option>
+              </select>
+            </div>
+            <p class="hint">What replaces each hidden value. The type and number tell the AI what it is, and the same value always gets the same placeholder.</p>
+          </div>
+        </section>
+      </div>
+
+      <footer class="bottom">
+        <a href="privacy.html" target="_blank">Privacy</a>
+        <a href="THIRD_PARTY_NOTICES.md" target="_blank">Licences</a>
+        <span id="version" class="version"></span>
       </footer>
-    </main>
+
+      <!-- Explanations and the download confirmation -->
+      <div id="sheet" class="sheet-layer" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+          <h2 id="sheetTitle"></h2>
+          <div id="sheetBody" class="sheet-body"></div>
+          <div class="sheet-actions">
+            <button id="sheetSecondary" class="button" type="button"></button>
+            <button id="sheetPrimary" class="button primary" type="button"></button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>

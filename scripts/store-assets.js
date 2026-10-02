@@ -158,11 +158,10 @@ async function captureGemini() {
 
     const extensionId = await findExtensionId(context);
     const popup = await context.newPage();
-    await popup.setViewportSize({ width: 360, height: 1100 });
+    await popup.setViewportSize({ width: 360, height: 560 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
     await popup.waitForTimeout(600);
-    await popup.evaluate(() => /** @type {HTMLDetailsElement} */ (document.getElementById("types")).open = true);
-    await popup.locator("main").screenshot({ path: join(captureDir, "popup.png") });
+    await popup.locator(".app").screenshot({ path: join(captureDir, "popup.png") });
   } finally {
     await context.close();
   }
@@ -206,11 +205,10 @@ async function captureDemo() {
     const customer = await paste(CUSTOMER_EMAIL);
     const code = await paste(CODE_PASTE);
 
-    await page.setViewportSize({ width: 360, height: 1100 });
+    await page.setViewportSize({ width: 360, height: 560 });
     await page.goto(`chrome-extension://${extensionId}/popup.html`);
     await page.waitForTimeout(500);
-    await page.evaluate(() => /** @type {HTMLDetailsElement} */ (document.getElementById("types")).open = true);
-    const popup = `data:image/png;base64,${(await page.locator("main").screenshot()).toString("base64")}`;
+    const popup = `data:image/png;base64,${(await page.locator(".app").screenshot()).toString("base64")}`;
     return { customer, code, popup };
   } finally {
     await context.close();

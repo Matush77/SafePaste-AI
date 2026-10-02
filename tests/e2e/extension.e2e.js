@@ -122,7 +122,9 @@ const CASES = [
       assert.equal(await valueOf(page, "#prompt-textarea"), sample, "rules alone should not catch these names");
 
       await page.goto(`chrome-extension://${extensionId}/popup.html`);
-      await page.locator("#nameModel").check();
+      await page.locator("#nameModel").click();
+      // Turning it on first asks before the 66 MB download.
+      await page.locator("#sheetPrimary", { hasText: "Download" }).click();
       await page.locator("#nameModelStatus", { hasText: "Ready" }).waitFor({ timeout: 180000 });
 
       try {

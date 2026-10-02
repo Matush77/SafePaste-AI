@@ -416,7 +416,14 @@ async function setNameModel(context, extensionId, on) {
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   const toggle = popup.locator("#nameModel");
   await toggle.waitFor();
-  await toggle.setChecked(on);
+  if ((await toggle.isChecked()) !== on) {
+    await toggle.click();
+    // Turning it on asks before downloading, unless it is already downloaded.
+    const download = popup.locator("#sheetPrimary", { hasText: "Download" });
+    if (on && (await download.isVisible())) {
+      await download.click();
+    }
+  }
   if (on) {
     await popup.locator("#nameModelStatus", { hasText: "Ready" }).waitFor({ timeout: 300000 });
   }
