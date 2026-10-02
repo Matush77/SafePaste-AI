@@ -3,18 +3,18 @@
 //   npm run build && npm run assets
 //
 // Icons come from store-assets/brand/logo.svg (and logo-16.svg for the
-// toolbar). Store screenshots show the real built extension: it is loaded
-// into Chromium, text is pasted, and the result, the on-page notice and the
-// popup are captured and framed. Needs the network once for the Inter font.
+// toolbar). Store images show the real built extension, framed in the flat
+// design of the popup. Needs the network for the Inter font.
 //
 //   npm run assets -- --gemini
 //
-// captures from the real Gemini site with the live QA profile instead
-// (~/.safepaste-ai/playwright-profile), cropped to the prompt box and the
-// SafePaste notice so nothing else on the page (account, location) is kept,
-// and saves the crops in store-assets/captures/ for later runs. It only
-// pastes made-up text, never sends it, and clears the prompt afterwards.
-// Without captures, a neutral demo chat page is used.
+// refreshes the captures from the real Gemini site with the live QA profile
+// (~/.safepaste-ai/playwright-profile): a redacted paste with the review
+// chip, the open review list, a code paste, and the popup. They are cropped
+// to the prompt box and SafePaste's own UI so nothing else on the page
+// (account, location) is kept, and saved in store-assets/captures/. Only
+// made-up text is pasted; nothing is sent, and the prompt is cleared after.
+// The reply image is captured on every run from a neutral demo chat page.
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -29,8 +29,9 @@ const outDir = join(root, "store-assets");
 const iconDir = join(root, "static", "assets");
 const extensionPath = join(root, "dist", "safepaste-ai");
 const captureDir = join(root, "store-assets", "captures");
-const CAPTURE_FILES = ["customer", "code", "popup"];
+const CAPTURE_FILES = ["customer", "review", "code", "popup", "popup-sites"];
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
+const SELECT_ALL = process.platform === "darwin" ? "Meta+A" : "Control+A";
 
 const logo = readFileSync(join(brandDir, "logo.svg"), "utf8");
 const logoMark = logo.replace('viewBox="0 0 128 128" width="128" height="128"', 'viewBox="16 16 96 96" width="96" height="96"');
@@ -55,7 +56,9 @@ const CODE_PASTE = [
 ].join("\n");
 
 const FONT = `<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">`;
-const COLORS = { indigo: "#2E3192", deep: "#1B1E5E", mint: "#34D399", ink: "#12142B", muted: "#5B6078", page: "#F4F5FB", line: "#DEE1F0", red: "#FDE2E1", redInk: "#B42318" };
+// The popup's palette (static/popup.css).
+const C = { accent: "#3034A6", deep: "#262A8C", soft: "#E7E8FA", bg: "#F1F2F5", surface: "#FFFFFF", border: "#D6D8E1", line: "#E4E5EB", text: "#15161E", muted: "#464A59", mint: "#A7F3D0", onAccentMuted: "#DADBF7", red: "#FDE2E1", redInk: "#9F1F14" };
+const CREDIT = "Shown on Gemini. SafePaste AI is independent and not affiliated with Google.";
 
 if (!existsSync(join(extensionPath, "manifest.json"))) {
   throw new Error("Built extension not found. Run npm run build first.");
@@ -65,7 +68,11 @@ await renderIcons();
 if (process.argv.includes("--gemini")) {
   await captureGemini();
 }
-const captures = loadCaptures() || { ...(await captureDemo()), site: null };
+const captures = loadCaptures();
+if (!captures) {
+  throw new Error("No Gemini captures in store-assets/captures. Run: npm run assets -- --gemini");
+}
+captures.reply = await captureReply();
 await renderStoreImages(captures);
 console.log("Icons written to static/assets, store images to store-assets.");
 
@@ -87,8 +94,8 @@ async function renderIcons() {
 }
 
 /**
- * Saved Gemini captures as data URIs, or null if there are none.
- * @returns {Record<string, string> & { site: string } | null}
+ * Saved captures as data URIs, or null if any is missing.
+ * @returns {Record<string, string> | null}
  */
 function loadCaptures() {
   if (!CAPTURE_FILES.every((name) => existsSync(join(captureDir, `${name}.png`)))) {
@@ -99,13 +106,10 @@ function loadCaptures() {
   for (const name of CAPTURE_FILES) {
     images[name] = `data:image/png;base64,${readFileSync(join(captureDir, `${name}.png`)).toString("base64")}`;
   }
-  return { ...images, site: "Gemini" };
+  return images;
 }
 
-/**
- * Pastes the demo texts into the real Gemini prompt with the built extension
- * and saves tight crops of the prompt box and the SafePaste notice.
- */
+/** Pastes the demo texts into the real Gemini prompt and saves tight crops. */
 async function captureGemini() {
   const profile = process.env.SAFEPASTE_QA_PROFILE || join(homedir(), ".safepaste-ai", "playwright-profile");
   const context = await chromium.launchPersistentContext(profile, {
@@ -125,33 +129,43 @@ async function captureGemini() {
     await page.waitForTimeout(2500);
     const clear = async () => {
       await editor.click();
-      await page.keyboard.press(`${PASTE.split("+")[0]}+A`);
+      await page.keyboard.press(SELECT_ALL);
       await page.keyboard.press("Backspace");
       await page.waitForTimeout(300);
     };
+    // The rounded prompt card around the editor.
+    const cardRect = () => editor.evaluate((element) => {
+      let node = element.parentElement;
+      while (node && !(parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 20 && node.getBoundingClientRect().width > 400)) {
+        node = node.parentElement;
+      }
+      const rect = (node || element).getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    });
 
     try {
       for (const [name, text] of /** @type {const} */ ([["customer", CUSTOMER_EMAIL], ["code", CODE_PASTE]])) {
         await clear();
         await page.evaluate((value) => navigator.clipboard.writeText(value), text);
         await page.keyboard.press(PASTE);
-        await page.waitForTimeout(700);
-        const pasted = await editor.innerText();
-        if (/rebecca\.thornton@|sk-proj-Qx7L|Winter-Harbor/.test(pasted)) {
+        await page.waitForTimeout(900);
+        if (/rebecca\.thornton@|sk-proj-Qx7L|Winter-Harbor/.test(await editor.innerText())) {
           throw new Error(`The ${name} sample was not redacted on Gemini; not capturing it.`);
         }
-        // The rounded prompt card around the editor, and nothing else.
-        const card = await editor.evaluate((element) => {
-          let node = element.parentElement;
-          while (node && !(parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 20 && node.getBoundingClientRect().width > 400)) {
-            node = node.parentElement;
-          }
-          const rect = (node || element).getBoundingClientRect();
-          return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-        });
-        // Includes SafePaste's "hidden · Review" chip, which overlaps the top of the prompt box.
-        await page.waitForTimeout(400);
+        const card = await cardRect();
+        // Includes SafePaste's "hidden · Review" chip on the top edge of the box.
         await page.screenshot({ path: join(captureDir, `${name}.png`), clip: { x: card.x - 16, y: card.y - 34, width: card.width + 32, height: card.height + 50 } });
+
+        if (name === "customer") {
+          // Open the review list (the chip sits just above the editor's right end).
+          const box = /** @type {{ x: number, y: number, width: number, height: number }} */ (await editor.boundingBox());
+          await page.mouse.click(box.x + box.width - 60, box.y - 24);
+          await page.waitForTimeout(400);
+          // Just the review list and the prompt box, below the page's header links.
+          const top = Math.max(0, card.y - 320);
+          await page.screenshot({ path: join(captureDir, "review.png"), clip: { x: card.x - 16, y: top, width: card.width + 32, height: card.y + card.height + 16 - top } });
+          await page.keyboard.press("Escape");
+        }
       }
     } finally {
       await clear();
@@ -165,22 +179,28 @@ async function captureGemini() {
     await popup.addStyleTag({ content: ".view { scrollbar-width: none; }" });
     await popup.waitForTimeout(600);
     await popup.locator(".app").screenshot({ path: join(captureDir, "popup.png") });
+    await popup.click("#openSites");
+    // Wait for the slide-in to finish.
+    await popup.waitForSelector("#sitesView.here");
+    await popup.waitForTimeout(600);
+    await popup.locator(".app").screenshot({ path: join(captureDir, "popup-sites.png") });
   } finally {
     await context.close();
   }
 }
 
 /**
- * Pastes the demo texts into a neutral demo chat page with the real
- * extension and returns the captured images as data URIs.
+ * A reply that uses placeholders, with the hover card and "Copy reply with
+ * real values", on a neutral demo chat page with the real extension.
+ * @returns {Promise<string>} PNG data URI
  */
-async function captureDemo() {
+async function captureReply() {
   const profile = join(tmpdir(), `safepaste-assets-${Date.now()}`);
   const context = await chromium.launchPersistentContext(profile, {
     channel: "chromium",
     headless: true,
     deviceScaleFactor: 2,
-    viewport: { width: 760, height: 520 },
+    viewport: { width: 820, height: 470 },
     args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
     permissions: ["clipboard-read", "clipboard-write"]
   });
@@ -188,32 +208,37 @@ async function captureDemo() {
     // The content script runs on supported sites only, so the demo page is
     // served at a supported address. It does not imitate any real site.
     await context.route("https://chatgpt.com/**", (route) => route.fulfill({ contentType: "text/html", body: demoChatPage() }));
-    const extensionId = await findExtensionId(context);
     const page = await context.newPage();
-
-    const paste = async (/** @type {string} */ text) => {
-      await page.goto("https://chatgpt.com/");
-      await page.waitForTimeout(300);
-      await page.evaluate(async (value) => navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([value], { type: "text/plain" }) })]), text);
-      await page.click("#prompt-textarea");
-      await page.keyboard.press(PASTE);
-      await page.waitForTimeout(250);
-      await page.evaluate(() => {
-        const box = /** @type {HTMLTextAreaElement} */ (document.querySelector("#prompt-textarea"));
-        box.style.height = `${box.scrollHeight + 4}px`;
-        box.blur();
-      });
-      return `data:image/png;base64,${(await page.screenshot()).toString("base64")}`;
-    };
-    const customer = await paste(CUSTOMER_EMAIL);
-    const code = await paste(CODE_PASTE);
-
-    await page.setViewportSize({ width: 360, height: 560 });
-    await page.goto(`chrome-extension://${extensionId}/popup.html`);
-    await page.addStyleTag({ content: ".view { scrollbar-width: none; }" });
-    await page.waitForTimeout(500);
-    const popup = `data:image/png;base64,${(await page.locator(".app").screenshot()).toString("base64")}`;
-    return { customer, code, popup };
+    await page.goto("https://chatgpt.com/");
+    await page.waitForTimeout(400);
+    await page.evaluate((value) => navigator.clipboard.writeText(value), CUSTOMER_EMAIL);
+    await page.click("#prompt-textarea");
+    await page.keyboard.press(PASTE);
+    await page.waitForTimeout(300);
+    // The message as sent, and the AI's reply to it.
+    await page.evaluate(() => {
+      const box = /** @type {HTMLTextAreaElement} */ (document.getElementById("prompt-textarea"));
+      /** @type {HTMLElement} */ (document.getElementById("sent")).textContent = box.value.split("\n").slice(0, 3).join("\n") + "\n…";
+      box.value = "";
+      box.dispatchEvent(new Event("input", { bubbles: true }));
+      box.blur();
+      /** @type {HTMLElement} */ (document.getElementById("reply")).innerHTML =
+        "<p>Here is a draft you can send:</p><p>Dear [[PERSON_1]],</p><p>I am sorry your order has not arrived. We are sending a replacement to [[ADDRESS_1]] today, and the tracking number will go to [[EMAIL_1]] within the hour.</p><p>Kind regards,<br>Customer Support</p>";
+    });
+    await page.waitForTimeout(600);
+    const target = await page.evaluate(() => {
+      const paragraph = /** @type {HTMLElement} */ (document.querySelectorAll("#reply p")[2]);
+      const text = /** @type {Text} */ (paragraph.firstChild);
+      const index = (text.nodeValue || "").indexOf("[[EMAIL_1]]");
+      const range = document.createRange();
+      range.setStart(text, index + 4);
+      range.setEnd(text, index + 5);
+      const rect = range.getBoundingClientRect();
+      return { x: rect.x, y: rect.y + rect.height / 2 };
+    });
+    await page.mouse.move(target.x, target.y);
+    await page.waitForTimeout(300);
+    return `data:image/png;base64,${(await page.screenshot()).toString("base64")}`;
   } finally {
     await context.close();
     rmSync(profile, { recursive: true, force: true });
@@ -238,16 +263,17 @@ async function findExtensionId(context) {
 
 function demoChatPage() {
   return `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>
-    body { margin: 0; font: 15px/1.5 Inter, system-ui, sans-serif; color: ${COLORS.ink}; background: #FFFFFF; }
-    .top { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-bottom: 1px solid ${COLORS.line}; font-weight: 600; }
-    .dot { width: 26px; height: 26px; border-radius: 8px; background: #E8E9F7; }
-    .chat { padding: 22px 22px 0; }
-    .bubble { background: ${COLORS.page}; border-radius: 14px; padding: 12px 16px; max-width: 520px; color: ${COLORS.muted}; }
-    .composer { position: absolute; left: 22px; right: 22px; bottom: 22px; border: 1px solid ${COLORS.line}; border-radius: 16px; padding: 12px 14px 16px; box-shadow: 0 6px 24px rgba(18, 20, 43, 0.08); }
-    textarea { width: 100%; border: 0; outline: 0; resize: none; font: 14.5px/1.6 Inter, system-ui, sans-serif; color: ${COLORS.ink}; height: 60px; overflow: hidden; }
+    body { margin: 0; font: 15px/1.6 Inter, system-ui, sans-serif; color: ${C.text}; background: #FFFFFF; }
+    .top { display: flex; align-items: center; gap: 10px; padding: 12px 22px; border-bottom: 1px solid ${C.line}; font-weight: 700; }
+    .dot { width: 22px; height: 22px; border-radius: 6px; background: ${C.soft}; }
+    .thread { padding: 18px 28px 90px; }
+    .sent { margin-left: auto; max-width: 70%; padding: 10px 14px; border-radius: 14px; background: ${C.bg}; color: ${C.muted}; white-space: pre-wrap; font-size: 13.5px; }
+    .reply p { margin: 10px 0; }
+    .composer { position: fixed; left: 28px; right: 28px; bottom: 20px; padding: 12px 14px; border: 1px solid ${C.border}; border-radius: 14px; background: #fff; }
+    textarea { width: 100%; height: 26px; border: 0; outline: 0; resize: none; font: 14.5px Inter, system-ui, sans-serif; color: ${C.text}; }
   </style></head><body>
     <div class="top"><span class="dot"></span>AI chat</div>
-    <div class="chat"><div class="bubble">Hi! How can I help you today?</div></div>
+    <div class="thread"><div class="sent" id="sent"></div><div class="reply" id="reply" data-message-author-role="assistant"></div></div>
     <div class="composer"><textarea id="prompt-textarea" spellcheck="false" placeholder="Message the assistant"></textarea></div>
   </body></html>`;
 }
@@ -267,151 +293,115 @@ function highlighted(text) {
   return html + escape(text.slice(cursor));
 }
 
-/** @param {Record<string, string> & { site: string | null }} captures */
-async function renderStoreImages(captures) {
+/** @param {Record<string, string>} shots */
+async function renderStoreImages(shots) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1 });
   const render = async (/** @type {string} */ body, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ file) => {
     await page.setViewportSize({ width, height });
-    await page.setContent(`<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${baseCss()}</style></head><body style="width:${width}px;height:${height}px">${body}</body></html>`, { waitUntil: "networkidle" });
+    await page.setContent(`<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${css()}</style></head><body style="width:${width}px;height:${height}px">${body}</body></html>`, { waitUntil: "networkidle" });
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: join(outDir, file), clip: { x: 0, y: 0, width, height } });
   };
-  const mark = (/** @type {number} */ size) => `<img src="${dataUri(logoMark)}" width="${size}" height="${size}" alt="">`;
-  const brandRow = `<div class="brand">${mark(40)}<span>SafePaste AI</span></div>`;
+  const mark = (/** @type {number} */ size) => `<img class="mark" src="${dataUri(logoMark)}" width="${size}" height="${size}" alt="">`;
+  /**
+   * Indigo panel with the message, light panel with the product.
+   * @param {{ eyebrow: string, title: string, text: string, points?: string[] }} copy
+   * @param {string} visual
+   */
+  const shot = (copy, visual) => `<div class="shot">
+    <div class="panel">
+      <div class="brand">${mark(40)}<span>SafePaste AI</span></div>
+      <div class="eyebrow">${copy.eyebrow}</div>
+      <h1>${copy.title}</h1>
+      <p>${copy.text}</p>
+      ${copy.points ? `<ul>${copy.points.map((point) => `<li>${point}</li>`).join("")}</ul>` : ""}
+    </div>
+    <div class="stage">${visual}</div>
+  </div>`;
+  const copied = (/** @type {string} */ text, /** @type {boolean} */ code) => `<div class="copied${code ? " code" : ""}"><div class="label">You copy</div><pre>${highlighted(text)}</pre></div>`;
+  const step = `<div class="step"><span class="key">Ctrl</span>+<span class="key">V</span><span class="arrow">&darr;</span></div>`;
 
   mkdirSync(outDir, { recursive: true });
 
-  // Copied text | Ctrl+V | what the chat receives (plus the SafePaste notice).
-  const flow = (/** @type {string} */ source, /** @type {string} */ name, /** @type {boolean} */ code) => `
-    <div class="flow">
-      <div class="card source${code ? " code" : ""}"><div class="label">You copy</div><pre>${highlighted(source)}</pre></div>
-      <div class="step"><span class="key">Ctrl</span><span class="plus">+</span><span class="key">V</span><span class="step-arrow">&rarr;</span></div>
-      <div class="frame">
-        <div class="label light">${captures.site ? `${captures.site} receives` : "The AI chat receives"}</div>
-        <img src="${captures[name]}" alt="">
-        ${captures[`${name}-notice`] ? `<img class="notice" src="${captures[`${name}-notice`]}" alt="">` : ""}
-        ${captures.site ? `<div class="credit">Shown on ${captures.site}. SafePaste AI is independent and not affiliated with Google.</div>` : ""}
-      </div>
-    </div>`;
+  await render(shot(
+    { eyebrow: "Paste safely", title: "Personal data never reaches the AI.", text: "Paste as usual. Names, emails, phone and card numbers become placeholders the moment you paste." },
+    `<div class="column">${copied(CUSTOMER_EMAIL, false)}${step}<div class="label">Gemini receives</div><img class="ui" src="${shots.customer}" alt=""><div class="credit">${CREDIT}</div></div>`
+  ), 1280, 800, "screenshot-1-1280x800.png");
 
-  await render(`<div class="shot stacked">
-    <div class="copy wide">${brandRow}
-      <h1>Sensitive data is removed <em>before</em> the AI sees it.</h1>
-      <p>Paste as usual. Works on ChatGPT, Gemini and Claude.</p>
-    </div>
-    ${flow(CUSTOMER_EMAIL, "customer", false)}
-  </div>`, 1280, 800, "screenshot-1-1280x800.png");
+  await render(shot(
+    { eyebrow: "Real values back", title: "Get the real names back in one click.", text: "Hover a placeholder to see what it hides. Copy the reply and every real value is filled back in, ready to send." },
+    `<img class="ui big" src="${shots.reply}" alt="">`
+  ), 1280, 800, "screenshot-2-1280x800.png");
 
-  await render(`<div class="shot stacked">
-    <div class="copy wide">${brandRow}
-      <h1>API keys and passwords stay private.</h1>
-      <p>200+ provider formats, plus passwords in configs and connection strings.</p>
-    </div>
-    ${flow(CODE_PASTE, "code", true)}
-  </div>`, 1280, 800, "screenshot-2-1280x800.png");
+  await render(shot(
+    { eyebrow: "Always in control", title: "See what was hidden. Undo any of it.", text: "A short list by the prompt box shows every hidden value. Unhide puts one back before you send." },
+    `<div class="column"><img class="ui" src="${shots.review}" alt=""><div class="credit">${CREDIT}</div></div>`
+  ), 1280, 800, "screenshot-3-1280x800.png");
 
-  await render(`<div class="shot popup-shot">
-    <div class="copy">${brandRow}
-      <h1>You decide what gets redacted.</h1>
-      <ul class="points">
-        <li><b>Balanced or Strict</b> protection</li>
-        <li>Turn each kind of data on or off</li>
-        <li>Optional <b>on-device name detection</b></li>
-        <li>See what the last paste redacted</li>
-      </ul>
-    </div>
-    <div class="popup"><img src="${captures.popup}" alt=""></div>
-  </div>`, 1280, 800, "screenshot-3-1280x800.png");
+  await render(shot(
+    { eyebrow: "For developers too", title: "API keys and passwords stay private.", text: "Over 200 secret formats from the open-source gitleaks rules, plus passwords in configs and connection strings." },
+    `<div class="column">${copied(CODE_PASTE, true)}${step}<div class="label">Gemini receives</div><img class="ui" src="${shots.code}" alt=""><div class="credit">${CREDIT}</div></div>`
+  ), 1280, 800, "screenshot-4-1280x800.png");
 
-  await render(`<div class="shot privacy">
-    <div class="copy wide">${brandRow}
-      <h1>Private by design. Nothing leaves your device.</h1>
-    </div>
-    <div class="grid">
-      <div class="tile"><h2>Nothing is sent anywhere</h2><p>Pasted text is checked inside your browser. SafePaste has no servers and no account.</p></div>
-      <div class="tile"><h2>Fails safe</h2><p>If a paste cannot be checked, it is blocked instead of going through unredacted.</p></div>
-      <div class="tile"><h2>Hidden links too</h2><p>Rich text whose links hide a token is pasted as plain text.</p></div>
-      <div class="tile"><h2>ChatGPT, Gemini, Claude</h2><p>Works in the prompt box only. Search boxes, logins and other fields are never touched.</p></div>
-    </div>
-  </div>`, 1280, 800, "screenshot-4-1280x800.png");
+  await render(shot(
+    { eyebrow: "Private by design", title: "Everything stays on your computer.", text: "No account and no servers. Choose how strict to be, what to hide, and where SafePaste works.", points: ["Works on ChatGPT, Gemini, Claude, Perplexity, Mistral and Grok", "Blocks a paste it cannot check, never sends it unchecked", "Free, with no tracking"] },
+    `<div class="pair"><img class="ui popup" src="${shots.popup}" alt=""><img class="ui popup" src="${shots["popup-sites"]}" alt=""></div>`
+  ), 1280, 800, "screenshot-5-1280x800.png");
 
   await render(`<div class="promo">
     ${mark(72)}
-    <div><div class="promo-name">SafePaste AI</div><div class="promo-line">Redact before you paste<br>into AI chats</div>
+    <div><div class="promo-name">SafePaste AI</div><div class="promo-line">Paste into AI chats without leaking personal data</div>
     <div class="chips"><span class="chip">[[EMAIL_1]]</span><span class="chip">[[PHONE_1]]</span></div></div>
   </div>`, 440, 280, "promo-small-440x280.png");
 
   await render(`<div class="marquee">
-    <div class="m-copy">${mark(84)}<h1>Paste into AI chats without leaking personal data or secrets.</h1><p>Local, automatic redaction for ChatGPT, Gemini and Claude.</p></div>
-    <div class="m-demo"><div class="m-line"><span class="m-before">rebecca.thornton@gmail.com</span><span class="m-arrow">&rarr;</span><span class="chip">[[EMAIL_1]]</span></div>
-    <div class="m-line"><span class="m-before">(614) 555-0187</span><span class="m-arrow">&rarr;</span><span class="chip">[[PHONE_1]]</span></div>
-    <div class="m-line"><span class="m-before">4111 1111 1111 1111</span><span class="m-arrow">&rarr;</span><span class="chip">[[CREDIT_CARD_1]]</span></div>
-    <div class="m-line"><span class="m-before">sk-proj-Qx7L&hellip;</span><span class="m-arrow">&rarr;</span><span class="chip">[[OPENAI_API_KEY_1]]</span></div></div>
+    <div class="m-copy">${mark(76)}<h1>Paste into AI chats without leaking personal data or secrets.</h1><p>Automatic, on-device redaction for ChatGPT, Gemini, Claude and more. Free.</p></div>
+    <div class="m-stage"><img class="ui" src="${shots.customer}" alt=""></div>
   </div>`, 1400, 560, "marquee-1400x560.png");
 
   await browser.close();
 }
 
-function baseCss() {
+function css() {
   return `
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Inter, system-ui, sans-serif; color: ${COLORS.ink}; background: ${COLORS.page}; -webkit-font-smoothing: antialiased; overflow: hidden; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 20px; color: ${COLORS.deep}; }
-  .brand img { border-radius: 10px; }
-  .shot { display: flex; gap: 48px; padding: 56px 60px; height: 800px; align-items: center; background: linear-gradient(180deg, #FFFFFF 0%, ${COLORS.page} 100%); }
-  .copy { width: 470px; flex: 0 0 auto; }
-  .copy.wide { width: auto; }
-  h1 { font-size: 40px; line-height: 1.12; letter-spacing: -0.02em; margin: 26px 0 16px; font-weight: 800; color: ${COLORS.ink}; }
-  h1 em { font-style: normal; color: ${COLORS.indigo}; }
-  .copy > p { font-size: 18px; line-height: 1.5; color: ${COLORS.muted}; margin: 0 0 26px; }
-  .card { background: #FFFFFF; border: 1px solid ${COLORS.line}; border-radius: 16px; padding: 16px 18px; box-shadow: 0 8px 28px rgba(18, 20, 43, 0.06); }
-  .label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: ${COLORS.muted}; margin-bottom: 8px; }
-  .label.light { margin: 0 0 10px 4px; }
-  pre { margin: 0; white-space: pre-wrap; font: 13.5px/1.6 Inter, system-ui, sans-serif; color: ${COLORS.ink}; }
-  .code pre { font: 12px/1.7 'JetBrains Mono', monospace; overflow-wrap: anywhere; }
-  mark { background: ${COLORS.red}; color: ${COLORS.redInk}; border-radius: 4px; padding: 0 3px; }
-  .frame { flex: 1; min-width: 0; }
-  .frame img { width: 100%; display: block; border-radius: 18px; border: 1px solid ${COLORS.line}; box-shadow: 0 24px 60px rgba(27, 30, 94, 0.18); }
-  .points { list-style: none; padding: 0; margin: 8px 0 0; font-size: 19px; line-height: 1.45; color: ${COLORS.muted}; }
-  .points li { position: relative; padding-left: 34px; margin-bottom: 18px; }
-  .points li::before { content: ""; position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: ${COLORS.mint}; box-shadow: inset 0 0 0 6px #D1FAE5; }
-  .points b { color: ${COLORS.ink}; }
-  .popup-shot { justify-content: center; gap: 90px; }
-  .popup img { width: 380px; display: block; border-radius: 16px; box-shadow: 0 24px 60px rgba(27, 30, 94, 0.2); max-height: 690px; object-fit: cover; object-position: top; border: 1px solid ${COLORS.line}; }
-  .privacy { flex-direction: column; align-items: flex-start; justify-content: center; }
-  .privacy h1 { max-width: 900px; }
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; width: 100%; }
-  .tile { background: #FFFFFF; border: 1px solid ${COLORS.line}; border-radius: 18px; padding: 26px 28px; border-top: 5px solid ${COLORS.indigo}; }
-  .tile h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.01em; }
-  .tile p { margin: 0; font-size: 17px; line-height: 1.5; color: ${COLORS.muted}; }
-  .promo { display: flex; align-items: center; gap: 22px; height: 280px; padding: 0 34px; background: linear-gradient(135deg, #3A3FB5 0%, ${COLORS.deep} 100%); color: #FFFFFF; }
-  .promo img { border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); outline: 2px solid rgba(255, 255, 255, 0.25); }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; color: ${C.text}; background: ${C.bg}; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  .shot { display: grid; grid-template-columns: 470px 1fr; height: 800px; }
+  .panel { display: flex; flex-direction: column; justify-content: center; padding: 0 52px 0 60px; background: ${C.accent}; color: #FFFFFF; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 44px; font-size: 20px; font-weight: 700; }
+  .mark { border-radius: 10px; background: #FFFFFF; }
+  .eyebrow { margin-bottom: 14px; color: ${C.mint}; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .panel h1 { margin: 0 0 18px; font-size: 44px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+  .panel p { margin: 0; color: ${C.onAccentMuted}; font-size: 19px; line-height: 1.5; }
+  .panel ul { margin: 26px 0 0; padding: 0; list-style: none; }
+  .panel li { position: relative; margin-bottom: 12px; padding-left: 28px; font-size: 16.5px; line-height: 1.4; }
+  .panel li::before { content: ""; position: absolute; left: 0; top: 5px; width: 14px; height: 14px; border-radius: 4px; background: ${C.mint}; }
+  .stage { display: flex; align-items: center; justify-content: center; padding: 40px 48px; }
+  .column { width: 100%; max-width: 700px; }
+  .label { margin: 0 0 8px 2px; color: ${C.muted}; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .copied { padding: 14px 18px; border: 1px solid ${C.border}; border-radius: 12px; background: ${C.surface}; }
+  .copied .label { margin: 0 0 6px; }
+  pre { margin: 0; white-space: pre-wrap; font: 14px/1.6 Inter, system-ui, sans-serif; }
+  .copied.code pre { font: 12.5px/1.65 'JetBrains Mono', monospace; white-space: pre; }
+  mark { padding: 0 3px; border-radius: 4px; background: ${C.red}; color: ${C.redInk}; }
+  .step { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0; color: ${C.muted}; font-size: 14px; }
+  .key { padding: 3px 9px; border: 1px solid ${C.border}; border-bottom-width: 3px; border-radius: 6px; background: ${C.surface}; color: ${C.text}; font-weight: 700; }
+  .arrow { margin-left: 8px; color: ${C.accent}; font-size: 20px; font-weight: 800; }
+  .ui { display: block; width: 100%; border: 1px solid ${C.border}; border-radius: 12px; background: ${C.surface}; }
+  .ui.big { max-height: 700px; width: auto; max-width: 100%; }
+  .credit { margin-top: 10px; color: ${C.muted}; font-size: 12px; }
+  .pair { display: flex; gap: 24px; }
+  .ui.popup { width: 330px; }
+  .promo { display: flex; align-items: center; gap: 22px; height: 280px; padding: 0 34px; background: ${C.accent}; color: #FFFFFF; }
   .promo-name { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
-  .promo-line { font-size: 16px; color: #D5D7F5; margin: 6px 0 16px; line-height: 1.35; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { font: 600 12.5px 'JetBrains Mono', monospace; background: rgba(52, 211, 153, 0.16); color: #7CF0C5; border: 1px solid rgba(52, 211, 153, 0.45); border-radius: 7px; padding: 4px 8px; white-space: nowrap; }
-  .marquee { display: flex; align-items: center; gap: 70px; height: 560px; padding: 0 80px; background: linear-gradient(135deg, #3A3FB5 0%, ${COLORS.deep} 100%); color: #FFFFFF; }
-  .m-copy { width: 600px; }
-  .m-copy img { border-radius: 20px; outline: 2px solid rgba(255, 255, 255, 0.25); }
-  .m-copy h1 { color: #FFFFFF; font-size: 44px; margin: 28px 0 14px; }
-  .m-copy p { font-size: 20px; color: #D5D7F5; margin: 0; }
-  .m-demo { flex: 1; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 22px; padding: 26px 28px; }
-  .m-line { display: grid; grid-template-columns: 1fr 28px 230px; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-  .m-line:last-child { border-bottom: 0; }
-  .m-before { font: 15px 'JetBrains Mono', monospace; color: #FCA5A5; text-decoration: line-through; text-decoration-color: rgba(252, 165, 165, 0.6); }
-  .m-arrow { color: #8E92D8; font-size: 20px; }
-  .m-line .chip { font-size: 14px; justify-self: start; }
-  .stacked { flex-direction: column; align-items: stretch; justify-content: center; gap: 34px; }
-  .stacked h1 { margin: 22px 0 10px; }
-  .stacked .copy > p { margin: 0; }
-  .flow .code pre { font-size: 11px; overflow-wrap: normal; white-space: pre; }
-  .flow { display: grid; grid-template-columns: 420px 118px 1fr; align-items: center; gap: 14px; }
-  .step { display: flex; align-items: center; justify-content: center; gap: 5px; color: ${COLORS.muted}; }
-  .key { font: 600 14px Inter, system-ui, sans-serif; color: ${COLORS.ink}; background: #FFFFFF; border: 1px solid ${COLORS.line}; border-bottom-width: 3px; border-radius: 7px; padding: 5px 9px; }
-  .plus { font-size: 14px; }
-  .step-arrow { font-size: 22px; margin-left: 6px; color: ${COLORS.indigo}; }
-  .frame img.notice { width: auto; height: 36px; margin: 14px 0 0 auto; border-radius: 8px; border: 0; box-shadow: 0 10px 24px rgba(18, 20, 43, 0.25); }
-  .credit { font-size: 12px; color: ${COLORS.muted}; margin-top: 12px; }
+  .promo-line { margin: 6px 0 14px; color: ${C.onAccentMuted}; font-size: 16px; line-height: 1.35; }
+  .chips { display: flex; gap: 6px; }
+  .chip { padding: 4px 8px; border-radius: 6px; background: ${C.mint}; color: #0B3B26; font: 700 13px 'JetBrains Mono', monospace; }
+  .marquee { display: grid; grid-template-columns: 640px 1fr; height: 560px; }
+  .m-copy { display: flex; flex-direction: column; justify-content: center; padding: 0 64px; background: ${C.accent}; color: #FFFFFF; }
+  .m-copy h1 { margin: 26px 0 14px; font-size: 40px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; }
+  .m-copy p { margin: 0; color: ${C.onAccentMuted}; font-size: 19px; }
+  .m-stage { display: flex; align-items: center; justify-content: center; padding: 40px; background: ${C.bg}; }
 `;
 }

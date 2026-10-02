@@ -161,7 +161,7 @@ h1 {
 .views {
   position: relative;
   flex: 1;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .view {

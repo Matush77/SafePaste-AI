@@ -141,6 +141,22 @@ const CASES = [
     }
   },
   {
+    name: "Popup sub-screens open in place",
+    async run(page) {
+      await page.setViewportSize({ width: 360, height: 560 });
+      await page.goto(`chrome-extension://${extensionId}/popup.html`);
+      for (const [button, view] of [["#openSites", "#sitesView"], ["#openTypes", "#typesView"]]) {
+        await page.click(button);
+        await page.waitForTimeout(500);
+        const x = await page.locator(view).evaluate((element) => element.getBoundingClientRect().x);
+        assert.equal(x, 0, `${view} is shifted by ${x}px`);
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(400);
+      }
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  },
+  {
     name: "Welcome page opens on install and its practice paste works",
     async run(page) {
       const welcome = context.pages().find((tab) => tab.url().endsWith("/welcome.html"));

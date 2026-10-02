@@ -350,7 +350,9 @@ function showView(view, opener) {
     requestAnimationFrame(() => {
       view.classList.add("here");
       homeView.classList.add("away");
-      /** @type {HTMLElement} */ (view.querySelector("[data-back]")).focus();
+      // Without preventScroll, focusing the still off-screen button scrolls
+      // the clipped container sideways and leaves the screen shifted.
+      /** @type {HTMLElement} */ (view.querySelector("[data-back]")).focus({ preventScroll: true });
     });
     return;
   }
@@ -368,7 +370,7 @@ function showView(view, opener) {
       closing.hidden = true;
     }
   }, 230);
-  subOpener?.focus();
+  subOpener?.focus({ preventScroll: true });
 }
 
 function renderTabStatus() {
