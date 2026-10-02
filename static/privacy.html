@@ -19,6 +19,7 @@
     <p>SafePaste AI runs locally in the browser and does not transmit pasted content to any server.</p>
     <h2>Data Processed</h2>
     <p>The extension reads text only when the user pastes or drops it into the prompt editor of a supported AI chat website. For rich-text pastes it also reads the HTML version of the clipboard, to check links for hidden sensitive values. The text is scanned locally and redacted before it is inserted into the page.</p>
+    <p>Supported websites: chatgpt.com, gemini.google.com and claude.ai, and, only if the user switches SafePaste on for them (Chrome asks the user to allow it), perplexity.ai, chat.mistral.ai, grok.com and poe.com.</p>
     <h2>Optional Name Detection Model</h2>
     <p>If the user turns on "Enhanced name detection" in the extension's settings, the extension downloads a name-detection model (about 66 MB) from Hugging Face (huggingface.co) once and keeps it in the browser's cache. This download request is the only network request the extension makes. It contains no pasted text or other user data; like any download, it reveals the user's IP address to Hugging Face. The model then runs on the user's device, and pasted text is never sent to Hugging Face or anyone else. The feature is off by default.</p>
     <h2>Data Stored</h2>

@@ -10,6 +10,13 @@ The extension reads text only when the user pastes or drops it into the prompt e
 - `https://gemini.google.com/`
 - `https://claude.ai/`
 
+Only if the user switches SafePaste on for them, which Chrome asks the user to allow:
+
+- `https://www.perplexity.ai/`
+- `https://chat.mistral.ai/`
+- `https://grok.com/`
+- `https://poe.com/`
+
 The text is scanned locally for sensitive data and redacted before it is inserted into the page.
 
 ## Optional Name Detection Model

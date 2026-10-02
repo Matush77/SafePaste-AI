@@ -458,7 +458,8 @@ function siteRow(site, control) {
 function renderSitesCount(optionalOn) {
   const on = optionalOn ?? [...byId("optionalSites").querySelectorAll("input")].filter((input) => /** @type {HTMLInputElement} */ (input).checked).length;
   const builtIn = SITE_LIST.length - OPTIONAL_SITES.length;
-  byId("sitesCount").textContent = `${builtIn + on} of ${SITE_LIST.length} on${on ? "" : ` · ${OPTIONAL_SITES.map((site) => site.name.split(" ")[0]).join(", ")} available`}`;
+  const more = OPTIONAL_SITES.length - on;
+  byId("sitesCount").textContent = `${builtIn + on} of ${SITE_LIST.length} on${more ? ` · ${more} more available` : ""}`;
 }
 
 function renderCategoryControls() {
