@@ -2,19 +2,21 @@
 
 Copy each section into the matching field of the Chrome Web Store Developer Dashboard.
 
+Store policy: do not list several product or brand names in the public description, short description or images (keyword spam). Version 2.0.3 was rejected for a list of seven AI chat names. Name at most one example; the reviewer-only permission justifications below may name the sites.
+
 ## Name
 
 SafePaste AI
 
 ## Short Description (132 characters max)
 
-Hides names, emails, card numbers and API keys before your paste reaches ChatGPT, Gemini or Claude. Runs on your computer.
+Hides names, emails, card numbers and API keys before your paste reaches an AI chat like ChatGPT. Runs on your computer.
 
 ## Detailed Description
 
 Paste into AI chats without giving away personal data or secrets.
 
-SafePaste AI checks text the moment you paste or drop it into ChatGPT, Gemini or Claude, and replaces sensitive values with placeholders such as [[PERSON_1]], [[EMAIL_1]] or [[CREDIT_CARD_1]] before the AI sees them. Everything happens inside your browser: no account, no servers, no tracking.
+SafePaste AI checks text the moment you paste or drop it into an AI chat, and replaces sensitive values with placeholders such as [[PERSON_1]], [[EMAIL_1]] or [[CREDIT_CARD_1]] before the AI sees them. Everything happens inside your browser: no account, no servers, no tracking.
 
 WHAT IT HIDES
 • Names, companies, street addresses and places
@@ -36,12 +38,12 @@ ALWAYS IN CONTROL
 • If a paste cannot be checked, it is blocked rather than sent unchecked. Links that hide a token in rich text are pasted as plain text.
 
 WORKS ON
-ChatGPT, Gemini and Claude, plus Perplexity, Mistral Le Chat, Grok and Poe, which you can switch on with one click.
+The most popular AI chat websites out of the box. More AI chat sites can be switched on with one click in the settings.
 
 OPTIONAL: ENHANCED NAME DETECTION
 A small AI model (about 66 MB, downloaded once from Hugging Face and stored inside Chrome) finds names the built-in rules miss. It runs on your computer, is off by default, and can be deleted from the settings.
 
-SafePaste AI is a safety layer, not a compliance guarantee. It is independent and not affiliated with OpenAI, Google, Anthropic, Perplexity, Mistral AI, xAI or Quora.
+SafePaste AI is a safety layer, not a compliance guarantee. It is independent and not affiliated with any AI chat service it works with.
 
 ## Category
 

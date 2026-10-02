@@ -29,7 +29,7 @@ const outDir = join(root, "store-assets");
 const iconDir = join(root, "static", "assets");
 const extensionPath = join(root, "dist", "safepaste-ai");
 const captureDir = join(root, "store-assets", "captures");
-const CAPTURE_FILES = ["customer", "review", "code", "popup", "popup-sites"];
+const CAPTURE_FILES = ["customer", "review", "code", "popup", "popup-types"];
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 const SELECT_ALL = process.platform === "darwin" ? "Meta+A" : "Control+A";
 
@@ -179,11 +179,13 @@ async function captureGemini() {
     await popup.addStyleTag({ content: ".view { scrollbar-width: none; }" });
     await popup.waitForTimeout(600);
     await popup.locator(".app").screenshot({ path: join(captureDir, "popup.png") });
-    await popup.click("#openSites");
+    // "What to redact", not "AI sites": a screenshot listing many AI brands
+    // counts as keyword spam in the store.
+    await popup.click("#openTypes");
     // Wait for the slide-in to finish.
-    await popup.waitForSelector("#sitesView.here");
+    await popup.waitForSelector("#typesView.here");
     await popup.waitForTimeout(600);
-    await popup.locator(".app").screenshot({ path: join(captureDir, "popup-sites.png") });
+    await popup.locator(".app").screenshot({ path: join(captureDir, "popup-types.png") });
   } finally {
     await context.close();
   }
@@ -345,8 +347,8 @@ async function renderStoreImages(shots) {
   ), 1280, 800, "screenshot-4-1280x800.png");
 
   await render(shot(
-    { eyebrow: "Private by design", title: "Everything stays on your computer.", text: "No account and no servers. Choose how strict to be, what to hide, and where SafePaste works.", points: ["Works on ChatGPT, Gemini, Claude, Perplexity, Mistral, Grok and Poe", "Blocks a paste it cannot check, never sends it unchecked", "Free, with no tracking"] },
-    `<div class="pair"><img class="ui popup" src="${shots.popup}" alt=""><img class="ui popup" src="${shots["popup-sites"]}" alt=""></div>`
+    { eyebrow: "Private by design", title: "Everything stays on your computer.", text: "No account and no servers. Choose how strict to be, what to hide, and where SafePaste works.", points: ["Works on popular AI chats, more with one click", "Blocks a paste it cannot check, never sends it unchecked", "Free, with no tracking"] },
+    `<div class="pair"><img class="ui popup" src="${shots.popup}" alt=""><img class="ui popup" src="${shots["popup-types"]}" alt=""></div>`
   ), 1280, 800, "screenshot-5-1280x800.png");
 
   await render(`<div class="promo">
@@ -356,7 +358,7 @@ async function renderStoreImages(shots) {
   </div>`, 440, 280, "promo-small-440x280.png");
 
   await render(`<div class="marquee">
-    <div class="m-copy">${mark(76)}<h1>Paste into AI chats without leaking personal data or secrets.</h1><p>Automatic, on-device redaction for ChatGPT, Gemini, Claude and more. Free.</p></div>
+    <div class="m-copy">${mark(76)}<h1>Paste into AI chats without leaking personal data or secrets.</h1><p>Automatic, on-device redaction for AI chats. Free.</p></div>
     <div class="m-stage"><img class="ui" src="${shots.customer}" alt=""></div>
   </div>`, 1400, 560, "marquee-1400x560.png");
 

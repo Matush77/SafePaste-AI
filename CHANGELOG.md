@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4
+
+- Stable release of the ONNX runtime (1.30.0) for the optional name model, instead of a pre-release build; the runtime's default download address is rewritten to the packaged copy at build time.
+- Security policy (SECURITY.md) with private vulnerability reporting.
+- Store listing and images no longer list the supported AI chat sites by name.
+
 ## 2.0.3
 
 Rebuilt from the ground up since 1.0.2.
@@ -26,4 +32,4 @@ Rebuilt from the ground up since 1.0.2.
 - Redesigned settings: fixed size, explained features, flat design with WCAG AA contrast, dark mode.
 
 ### Under the hood
-- Third-party licence notices, a security policy, and a stable release of the ONNX runtime instead of a pre-release build.
+- Third-party licence notices.
