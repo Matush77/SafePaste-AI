@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SafePaste AI",
   "short_name": "SafePaste AI",
-  "version": "2.5.0",
+  "version": "2.0.3",
   "description": "Locally redacts sensitive data before pasted text reaches supported AI chat websites.",
   "minimum_chrome_version": "116",
   "permissions": [
