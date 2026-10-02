@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to SafePaste AI</title>
+    <link rel="icon" href="assets/icon-32.png">
+    <link rel="stylesheet" href="welcome.css">
+  </head>
+  <body>
+    <header class="hero">
+      <img src="assets/logo.svg" alt="" width="56" height="56">
+      <div>
+        <p class="eyebrow">SafePaste AI is installed</p>
+        <h1>Paste into AI chats without giving away personal data.</h1>
+        <p class="lead">When you paste into ChatGPT, Gemini or Claude, SafePaste hides names, emails, phone numbers, card numbers and passwords before the AI sees them. It all happens on your computer.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="step" aria-labelledby="try">
+        <h2 id="try"><span class="num">1</span>Try it here in 30 seconds</h2>
+        <p class="muted">A safe practice run: nothing on this page is sent anywhere.</p>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="label">A client email (made-up data)</span>
+            <button id="copySample" class="button" type="button">Copy</button>
+          </div>
+          <pre id="sample"></pre>
+        </div>
+
+        <div class="card">
+          <label class="label" for="practice">Now paste it here, as you would into ChatGPT (Ctrl+V)</label>
+          <textarea id="practice" rows="6" placeholder="Click here and paste…" spellcheck="false"></textarea>
+          <div id="hiddenList" class="hidden-list" hidden>
+            <div class="hidden-title"><span id="hiddenCount"></span> hidden from the AI</div>
+            <ul id="hiddenItems"></ul>
+            <p class="muted small">On a real AI site, the same list appears above the prompt box, with Unhide for each item.</p>
+          </div>
+        </div>
+
+        <div id="replyCard" class="card" hidden>
+          <div class="card-head">
+            <span class="label">The AI answers, using the placeholders</span>
+            <button id="copyReply" class="button primary" type="button">Copy with real values</button>
+          </div>
+          <p class="reply" id="reply"></p>
+          <p class="muted small">Hover a highlighted placeholder to see what it stands for. Copying puts the real values back, ready to send.</p>
+          <div id="copied" class="copied" hidden>
+            <span class="label">On your clipboard</span>
+            <pre id="copiedText"></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="sites">
+        <h2 id="sites"><span class="num">2</span>Use it on your AI chats</h2>
+        <div class="card list">
+          <div id="siteRows"></div>
+        </div>
+        <p class="muted small">Chrome asks once before SafePaste works on an extra site. There it only checks text you paste into the prompt box.</p>
+      </section>
+
+      <section class="step" aria-labelledby="pin">
+        <h2 id="pin"><span class="num">3</span>Pin SafePaste to your toolbar</h2>
+        <div class="card pin">
+          <ol>
+            <li>Click the <b>puzzle piece</b> icon at the top right of Chrome.</li>
+            <li>Click the <b>pin</b> next to <b>SafePaste AI</b>.</li>
+            <li>Click the SafePaste icon any time to see what it protects and change settings.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="facts" aria-label="Privacy">
+        <div><b>On your computer</b><span>Pasted text is checked inside Chrome. SafePaste has no servers and no account.</span></div>
+        <div><b>Fails safe</b><span>If a paste cannot be checked, it is blocked rather than sent unchecked.</span></div>
+        <div><b>Yours to control</b><span>Choose what to hide and how strict to be in the SafePaste menu.</span></div>
+      </section>
+    </main>
+
+    <footer>
+      <a href="privacy.html" target="_blank">Privacy policy</a>
+      <a href="THIRD_PARTY_NOTICES.md" target="_blank">Licences</a>
+      <span id="version"></span>
+    </footer>
+
+    <div id="peek" class="peek" hidden></div>
+    <script src="welcome.js"></script>
+  </body>
+</html>

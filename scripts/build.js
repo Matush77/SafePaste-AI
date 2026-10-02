@@ -28,7 +28,8 @@ const extensionBuild = {
   entryPoints: {
     contentScript: join(root, "src", "contentScript.js"),
     popup: join(root, "src", "popup", "popup.js"),
-    background: join(root, "src", "background.js")
+    background: join(root, "src", "background.js"),
+    welcome: join(root, "src", "welcome", "welcome.js")
   },
   outdir: outDir,
   bundle: true,
@@ -150,6 +151,8 @@ function validatePackage(manifest) {
     manifest.background && manifest.background.service_worker,
     "offscreen.html",
     "offscreen.js",
+    "welcome.html",
+    "welcome.js",
     // Licence notices for bundled third-party code must ship with it.
     "THIRD_PARTY_NOTICES.md",
     ...ONNX_RUNTIME_FILES.map((file) => `ort/${file}`),

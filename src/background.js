@@ -11,7 +11,13 @@ import { syncSiteScripts } from "./siteRegistration.js";
 const sync = () => {
   syncSiteScripts(/** @type {any} */ (chrome)).catch((error) => console.warn("SafePaste: could not update site scripts", error));
 };
-chrome.runtime.onInstalled.addListener(sync);
+chrome.runtime.onInstalled.addListener((details) => {
+  sync();
+  // First install: show the welcome page with a practice paste.
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") }).catch(() => {});
+  }
+});
 chrome.runtime.onStartup.addListener(sync);
 chrome.permissions.onAdded.addListener(sync);
 chrome.permissions.onRemoved.addListener(sync);

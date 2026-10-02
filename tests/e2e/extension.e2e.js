@@ -141,6 +141,22 @@ const CASES = [
     }
   },
   {
+    name: "Welcome page opens on install and its practice paste works",
+    async run(page) {
+      const welcome = context.pages().find((tab) => tab.url().endsWith("/welcome.html"));
+      assert.ok(welcome, "the welcome page did not open on install");
+      await page.goto(`chrome-extension://${extensionId}/welcome.html`);
+      await page.click("#copySample");
+      await page.click("#practice");
+      await page.keyboard.press(PASTE);
+      const practice = await page.inputValue("#practice");
+      assert.ok(practice.includes("[[PERSON_1]]") && !practice.includes("Rebecca Thornton"), `not redacted: ${practice}`);
+      await page.click("#copyReply");
+      const copied = await page.evaluate(() => navigator.clipboard.readText());
+      assert.ok(copied.includes("Dear Rebecca Thornton") && !copied.includes("[["), `not restored: ${copied}`);
+    }
+  },
+  {
     name: "Copying a reply fills the real values back in",
     async run(page) {
       await open(page, "https://chatgpt.com/");
