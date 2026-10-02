@@ -42,6 +42,73 @@ const PROMPT_SELECTORS = {
   ]
 };
 
+// The AI's replies, newest last, for "Copy last reply with real values".
+/** @type {Record<Site["id"], string>} */
+const REPLY_SELECTORS = {
+  chatgpt: "[data-message-author-role='assistant']",
+  gemini: "model-response message-content, model-response",
+  claude: "[data-is-streaming] .font-claude-response, .font-claude-response, [data-is-streaming]"
+};
+
+/**
+ * The most recent AI reply on the page, if the site's layout is known.
+ * @param {Site} site
+ * @param {Document} [doc]
+ * @returns {HTMLElement | null}
+ */
+export function lastReply(site, doc = document) {
+  const replies = doc.querySelectorAll(REPLY_SELECTORS[site.id]);
+  return replies.length ? /** @type {HTMLElement} */ (replies[replies.length - 1]) : null;
+}
+
+/**
+ * Text currently in a prompt editor.
+ * @param {HTMLElement} editable
+ */
+export function editorText(editable) {
+  return editable.tagName === "TEXTAREA" ? /** @type {HTMLTextAreaElement} */ (editable).value : editable.innerText || editable.textContent || "";
+}
+
+/**
+ * Replaces the first occurrence of `search` in a prompt editor, through the
+ * same insertion path as a paste so the site's editor state stays in step.
+ * @param {HTMLElement} editable
+ * @param {string} search
+ * @param {string} replacement
+ * @returns {boolean} Whether it was found and replaced.
+ */
+export function replaceInEditor(editable, search, replacement) {
+  if (editable.tagName === "TEXTAREA") {
+    const textarea = /** @type {HTMLTextAreaElement} */ (editable);
+    const index = textarea.value.indexOf(search);
+    if (index === -1) {
+      return false;
+    }
+    textarea.focus();
+    textarea.setSelectionRange(index, index + search.length);
+    return insertText(textarea, replacement);
+  }
+
+  const walker = document.createTreeWalker(editable, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const index = (node.nodeValue || "").indexOf(search);
+    if (index !== -1) {
+      const range = document.createRange();
+      range.setStart(node, index);
+      range.setEnd(node, index + search.length);
+      editable.focus();
+      const selection = document.getSelection();
+      if (!selection) {
+        return false;
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return insertText(editable, replacement);
+    }
+  }
+  return false;
+}
+
 /**
  * @param {Location} loc
  * @param {Document} doc

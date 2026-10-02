@@ -16,6 +16,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const extensionPath = join(root, "dist", "safepaste-ai");
 const PASTE = process.platform === "darwin" ? "Meta+V" : "Control+V";
 const UNDO = process.platform === "darwin" ? "Meta+Z" : "Control+Z";
+const COPY = process.platform === "darwin" ? "Meta+C" : "Control+C";
 
 const SENSITIVE = "Contact Dr. Jane Smith at jane.smith@example.com, key sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890.";
 const REDACTED = "Contact Dr. [[PERSON_1]] at [[EMAIL_1]], key [[OPENAI_API_KEY_1]].";
@@ -135,6 +136,31 @@ const CASES = [
         await page.goto(`chrome-extension://${extensionId}/popup.html`);
         await page.locator("#nameModel").uncheck();
       }
+    }
+  },
+  {
+    name: "Copying a reply fills the real values back in",
+    async run(page) {
+      await open(page, "https://chatgpt.com/");
+      await pasteInto(page, "#prompt-textarea", { "text/plain": SENSITIVE });
+      // A reply from the AI that uses the placeholders it was sent.
+      await page.evaluate(() => {
+        const reply = document.createElement("div");
+        reply.id = "reply";
+        reply.setAttribute("data-message-author-role", "assistant");
+        reply.textContent = "Dear [[PERSON_1]], we emailed [[EMAIL_1]].";
+        document.body.append(reply);
+      });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => {
+        /** @type {HTMLElement} */ (document.activeElement).blur();
+        /** @type {Selection} */ (getSelection()).selectAllChildren(/** @type {HTMLElement} */ (document.getElementById("reply")));
+      });
+      await page.keyboard.press(COPY);
+      const copied = await page.evaluate(() => navigator.clipboard.readText());
+      assert.equal(copied, "Dear Jane Smith, we emailed jane.smith@example.com.");
+      // The page itself never receives the real values.
+      assert.equal(await page.locator("#reply").textContent(), "Dear [[PERSON_1]], we emailed [[EMAIL_1]].");
     }
   },
   {

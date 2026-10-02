@@ -54,6 +54,9 @@ Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacke
 | `src/detection/` | Detection rules by area (secrets, including the [gitleaks](https://github.com/gitleaks/gitleaks) rule set; contact details, with phone numbers checked by libphonenumber; financial, government IDs, network, addresses, structured fields, people/organisations/places) and the step that merges their results. |
 | `src/siteAdapters.js` | Supported sites, prompt-editor detection, text insertion. |
 | `src/pasteGuard.js` | Paste and drop interception, fail-closed behaviour, waiting for the optional name model. |
+| `src/vault.js` | Per-tab, in-memory map of placeholders to real values; the same value keeps the same placeholder across pastes. |
+| `src/replyAssist.js` | Highlights placeholders in replies, shows their real values on hover, and fills them back in when a reply is copied, without writing real values into the site's page. |
+| `src/reviewChip.js` | The "N hidden · Review" chip above the prompt box, with Unhide per item and "Copy reply with real values". |
 | `src/ner/ner.js` | Turns name-model output into detection candidates (shared by the extension and `eval:ner`). |
 | `src/background.js`, `src/offscreen/` | Service worker and offscreen document that run the optional name model. |
 | `src/contentScript.js` | Content-script entry point. |

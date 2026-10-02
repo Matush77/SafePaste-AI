@@ -50,9 +50,13 @@ const BLOCK_TAGS = new Set([
  * @param {Document} [options.doc]
  * @param {Notify} [options.notify]
  * @param {NameModel} [options.nameModel] The optional local name-detection model.
+ * @param {import("./vault.js").Vault} [options.vault] Numbers placeholders across pastes and remembers their values.
+ * @param {(editable: HTMLElement) => void} [options.onRedacted] Called after a redacted paste is inserted; when set, it
+ *   replaces the "redacted N items" notice (the review chip shows it instead).
  */
-export function installPasteGuard({ site, storage, win = window, doc = document, notify, nameModel }) {
+export function installPasteGuard({ site, storage, win = window, doc = document, notify, nameModel, vault, onRedacted }) {
   const show = notify || ((message) => showToast(doc, message));
+  const placeholders = () => (vault ? { placeholderFor: (/** @type {string} */ type, /** @type {string} */ value) => vault.placeholderFor(type, value, settings.placeholderStyle) } : {});
   /** @type {Promise<void>} */
   let pending = Promise.resolve();
 
@@ -123,7 +127,7 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
       return;
     }
 
-    const rules = redact(source, settings);
+    const rules = redact(source, settings, undefined, placeholders());
     const hiddenFindings = html && !rules.changed ? findHiddenSensitiveValues(html, settings) : [];
     const useModel = Boolean(settings.nameModel && nameModel && source.length <= NAME_MODEL_MAX_CHARS);
     // Without the model, a paste with nothing to redact goes through untouched.
@@ -148,7 +152,7 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
     // Keep pastes in order while each waits for the model.
     pending = pending.then(async () => {
       const candidates = await detectNamesWithTimeout(source);
-      const result = candidates ? redact(source, settings, candidates) : rules;
+      const result = candidates ? redact(source, settings, candidates, placeholders()) : rules;
       finish(editable, source, result, hiddenFindings, !candidates);
     });
   }
@@ -174,10 +178,17 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
     }
 
     const findings = result.changed ? result.findings : hiddenFindings;
+    if (result.changed && onRedacted) {
+      onRedacted(editable);
+    }
     if (settings.showToast || modelFailed) {
       const fallback = modelFailed ? " The name model did not respond, so only the built-in rules were used." : "";
       if (result.changed) {
-        show(`SafePaste AI: redacted ${plural(findings.length, "item")}.${fallback}`);
+        // With the review chip, it shows what was hidden; a notice is only
+        // needed to say the name model did not answer.
+        if (!onRedacted || modelFailed) {
+          show(`SafePaste AI: redacted ${plural(findings.length, "item")}.${fallback}`);
+        }
       } else if (findings.length) {
         show(`SafePaste AI: pasted as plain text because links or formatting contained ${plural(findings.length, "sensitive item")}.${fallback}`);
       } else if (modelFailed) {
@@ -221,6 +232,8 @@ export function installPasteGuard({ site, storage, win = window, doc = document,
 
   return {
     ready,
+    /** The current settings. */
+    settings: () => settings,
     /** Resolves once every held paste has been inserted. */
     whenIdle: () => pending,
     dispose() {
@@ -315,7 +328,7 @@ function plural(count, noun) {
  * @param {Document} doc
  * @param {string} message
  */
-function showToast(doc, message) {
+export function showToast(doc, message) {
   if (!doc.body) {
     return;
   }

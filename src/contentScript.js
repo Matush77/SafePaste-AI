@@ -1,8 +1,11 @@
 // Content-script entry point. Bundled by scripts/build.js into a single file.
-import { installPasteGuard } from "./pasteGuard.js";
+import { installPasteGuard, showToast } from "./pasteGuard.js";
+import { installReplyAssist } from "./replyAssist.js";
+import { createReviewChip } from "./reviewChip.js";
 import { MESSAGES } from "./shared/nameModel.js";
 import { SETTINGS_KEY } from "./shared/storageKeys.js";
 import { currentSite } from "./siteAdapters.js";
+import { createVault } from "./vault.js";
 
 const site = currentSite();
 if (site) {
@@ -14,9 +17,36 @@ if (site) {
     }
   }).catch(() => {});
 
-  installPasteGuard({
+  const notify = (/** @type {string} */ message) => showToast(document, message);
+  // Placeholders and their real values for this tab, in memory only.
+  const vault = createVault();
+  /** @type {ReturnType<typeof installPasteGuard> | null} */
+  let guard = null;
+  const settings = () => (guard ? guard.settings() : null);
+
+  const replies = installReplyAssist({
+    vault,
+    site,
+    notify,
+    isEnabled: () => Boolean(settings()?.restoreValues),
+    onChange: () => review.render()
+  });
+  const review = createReviewChip({
+    vault,
+    replies,
+    notify,
+    settings: () => ({ notice: Boolean(settings()?.showToast), restoreValues: Boolean(settings()?.restoreValues) })
+  });
+
+  guard = installPasteGuard({
     site,
     storage: chrome.storage,
+    notify,
+    vault,
+    onRedacted(editable) {
+      replies.activate();
+      review.setEditor(editable);
+    },
     nameModel: {
       async detect(text) {
         const response = await chrome.runtime.sendMessage({ type: MESSAGES.detect, text });
@@ -25,6 +55,13 @@ if (site) {
         }
         return response.candidates;
       }
+    }
+  });
+
+  // Settings changed in the popup: redraw highlights and the chip.
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "sync" && changes[SETTINGS_KEY]) {
+      setTimeout(() => replies.refresh(), 0);
     }
   });
 }

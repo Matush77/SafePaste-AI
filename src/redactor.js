@@ -14,6 +14,7 @@ import { detectAll } from "./detection/index.js";
  * @property {"typed"|"compact"} placeholderStyle
  * @property {"balanced"|"strict"} sensitivity  "strict" also redacts low-confidence matches.
  * @property {boolean} nameModel  Also run the optional local name-detection model.
+ * @property {boolean} restoreValues  Show and copy the real values behind placeholders in replies.
  * @property {Record<Category, boolean>} categories
  *
  * @typedef {object} Match
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   placeholderStyle: "typed",
   sensitivity: "balanced",
   nameModel: false,
+  restoreValues: true,
   categories: {
     apiKeys: true,
     credentials: true,
@@ -96,6 +98,7 @@ export function mergeSettings(settings) {
     placeholderStyle: input.placeholderStyle === "compact" ? "compact" : "typed",
     sensitivity: input.sensitivity === "strict" ? "strict" : "balanced",
     nameModel: input.nameModel === true,
+    restoreValues: input.restoreValues !== false,
     categories: /** @type {Record<Category, boolean>} */ (categories)
   };
 }
@@ -119,9 +122,12 @@ export function detect(text, settingsInput, extra) {
  * @param {string} text
  * @param {Partial<Settings>} [settingsInput]
  * @param {import("./detection/util.js").Candidate[]} [extra]
+ * @param {{ placeholderFor?: (type: string, value: string) => string }} [options]
+ *   `placeholderFor` numbers placeholders across several pastes (see vault.js);
+ *   by default numbering starts again for every call.
  * @returns {RedactionResult}
  */
-export function redact(text, settingsInput, extra) {
+export function redact(text, settingsInput, extra, options = {}) {
   const settings = mergeSettings(settingsInput);
   if (!text || !settings.enabled) {
     return { text, changed: false, findings: [] };
@@ -132,7 +138,7 @@ export function redact(text, settingsInput, extra) {
     return { text, changed: false, findings: [] };
   }
 
-  const placeholderFor = createPlaceholderFactory(settings);
+  const placeholderFor = options.placeholderFor || createPlaceholderFactory(settings);
   let output = "";
   let cursor = 0;
   /** @type {Finding[]} */

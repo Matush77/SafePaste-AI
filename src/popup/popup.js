@@ -30,6 +30,7 @@ const categories = byId("categories");
 const typesCount = byId("typesCount");
 const placeholderStyle = /** @type {HTMLSelectElement} */ (byId("placeholderStyle"));
 const showToast = /** @type {HTMLInputElement} */ (byId("showToast"));
+const restoreValues = /** @type {HTMLInputElement} */ (byId("restoreValues"));
 const lastRedaction = byId("lastRedaction");
 
 let settings = mergeSettings();
@@ -64,6 +65,7 @@ function init() {
   }
   placeholderStyle.addEventListener("change", () => updateSettings({ placeholderStyle: /** @type {"typed" | "compact"} */ (placeholderStyle.value) }));
   showToast.addEventListener("change", () => updateSettings({ showToast: showToast.checked }));
+  restoreValues.addEventListener("change", () => updateSettings({ restoreValues: restoreValues.checked }));
   const infoToggle = byId("nameModelInfoToggle");
   const info = byId("nameModelInfo");
   infoToggle.addEventListener("click", () => {
@@ -184,6 +186,7 @@ function renderSettings() {
   sensitivityHint.textContent = SENSITIVITY_HINTS[settings.sensitivity];
   placeholderStyle.value = settings.placeholderStyle;
   showToast.checked = settings.showToast;
+  restoreValues.checked = settings.restoreValues;
   nameModel.checked = settings.nameModel;
 
   const inputs = /** @type {NodeListOf<HTMLInputElement>} */ (categories.querySelectorAll("input[data-category]"));

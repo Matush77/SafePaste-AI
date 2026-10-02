@@ -26,6 +26,10 @@ The extension stores:
 
 The extension does not store original sensitive values or redacted prompt text.
 
+## Real Values in Replies
+
+To show what a placeholder stands for and to let the user copy a reply with the real values filled back in, the extension keeps, for each browser tab, a list of the placeholders it inserted and the original values. This list is kept in that tab's memory only: it is never written to storage, never sent anywhere, and is gone when the tab is closed or reloaded. The real values are shown only inside the extension's own isolated interface (the hover card and the review list), which the website's scripts cannot read, and are never written into the website's page. Copying a reply with real values puts them on the user's clipboard. The feature can be turned off in the extension's settings.
+
 ## Data Shared
 
 No data is sold, transferred, or shared with third parties by the extension.

@@ -14,6 +14,8 @@ SafePaste AI helps reduce accidental disclosure when copying text into supported
 
 It uses local detection rules for common sensitive data: API keys and tokens (including the gitleaks rule set for more than 200 providers), passwords and credentials, emails, phone numbers, government IDs, credit cards, IBANs, IP and MAC addresses, street addresses, names, organizations and locations. If a paste cannot be checked, it is blocked instead of going through unredacted. Links that hide a token in pasted rich text are pasted as plain text.
 
+Get your real values back: hover a placeholder in the AI's reply to see what it stands for, and copy a reply to get it with the real names, emails and numbers filled back in, ready to send. A small "hidden" chip by the prompt box lists what was hidden and lets you unhide any item before sending. The real values stay in that browser tab only and are never shown to the website.
+
 Optional enhanced name detection finds names the rules miss with a small AI model that runs entirely on your device (off by default; turning it on downloads the model once).
 
 SafePaste AI is a safety layer, not a compliance guarantee.
