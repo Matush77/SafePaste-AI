@@ -20,6 +20,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     return false;
   }
+  if (message.type === MESSAGES.unload) {
+    unload()
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => sendResponse({ error: String(error && error.message ? error.message : error) }));
+    return true;
+  }
   if (!FORWARDED.has(message.type)) {
     return false;
   }
@@ -46,6 +52,14 @@ async function forward(message) {
   }
   await ensureOffscreenDocument();
   return chrome.runtime.sendMessage({ ...message, target: OFFSCREEN_TARGET });
+}
+
+/** Closes the offscreen document, so the model is no longer in memory or in use. */
+async function unload() {
+  if (await hasOffscreenDocument()) {
+    await chrome.offscreen.closeDocument();
+  }
+  await chrome.storage.local.remove(NAME_MODEL_READY_KEY);
 }
 
 async function hasOffscreenDocument() {

@@ -44,11 +44,14 @@ const INFO = {
     body: `${modelFacts()}
       <dl>
         <dt>What it does</dt><dd>Finds names the built-in rules miss, such as “Kowalski approved the budget”. It is an English model (DistilBERT) that recognises people, organisations and places.</dd>
-        <dt>Where it is kept</dt><dd>In this browser's cache for SafePaste. Turning the feature off keeps it, so turning it on again is instant. Removing the extension deletes it.</dd>
+        <dt>Turning it off</dt><dd>Stops using it but keeps the download, so turning it on again is instant. Use “Delete download” below to free the space.</dd>
         <dt>If it fails</dt><dd>If it cannot load or answer in time, pastes are still redacted with the built-in rules, and you are told.</dd>
       </dl>`
   }
 };
+
+// Where transformers.js keeps the model files (Cache Storage of this extension).
+const MODEL_CACHE = "transformers-cache";
 
 const byId = (/** @type {string} */ id) => /** @type {HTMLElement} */ (document.getElementById(id));
 const enabled = /** @type {HTMLInputElement} */ (byId("enabled"));
@@ -72,6 +75,8 @@ let settings = mergeSettings();
 let tabSite = null;
 /** @type {NameModelStatus | null} */
 let modelStatus = null;
+// A one-off note shown while the feature is off, e.g. after deleting the download.
+let modelNote = "";
 
 init();
 
@@ -118,7 +123,7 @@ function init() {
     nameModel.checked = false;
     openSheet({
       title: "Download the name model?",
-      body: `${modelFacts()}<p>It finds names the built-in rules miss. The download starts now and can take a minute or two; you can keep working meanwhile and turn it off any time.</p>`,
+      body: `${modelFacts()}<p>It finds names the built-in rules miss. The download starts now and can take a minute or two; you can keep working meanwhile. You can turn it off or delete it any time from the ⓘ next to this setting.</p>`,
       primary: `Download ${NAME_MODEL_SIZE_MB} MB`,
       secondary: "Not now",
       opener: nameModel,
@@ -130,11 +135,24 @@ function init() {
   });
 
   for (const button of document.querySelectorAll("button[data-info]")) {
-    button.addEventListener("click", () => {
-      const info = INFO[/** @type {keyof typeof INFO} */ (/** @type {HTMLElement} */ (button).dataset.info)];
-      const error = button.getAttribute("data-info") === "model" && modelStatus && modelStatus.state === "error"
-        ? `<p class="error-detail">Last error: ${escapeHtml(modelStatus.error || "unknown")}</p>` : "";
-      openSheet({ title: info.title, body: info.body + error, primary: "Got it", opener: /** @type {HTMLElement} */ (button) });
+    button.addEventListener("click", async () => {
+      const kind = /** @type {keyof typeof INFO} */ (/** @type {HTMLElement} */ (button).dataset.info);
+      const info = INFO[kind];
+      if (kind !== "model") {
+        openSheet({ title: info.title, body: info.body, primary: "Got it", opener: /** @type {HTMLElement} */ (button) });
+        return;
+      }
+      const stored = await storedMegabytes();
+      const usage = stored === null ? "" : `<p class="usage">${stored ? `Space used on this computer now: <b>${stored} MB</b>` : "Not downloaded. Nothing is stored on this computer."}</p>`;
+      const error = modelStatus && modelStatus.state === "error" ? `<p class="error-detail">Last error: ${escapeHtml(modelStatus.error || "unknown")}</p>` : "";
+      openSheet({
+        title: info.title,
+        body: usage + info.body + error,
+        primary: "Got it",
+        secondary: stored ? "Delete download" : undefined,
+        onSecondary: deleteModel,
+        opener: /** @type {HTMLElement} */ (button)
+      });
     });
   }
 
@@ -165,12 +183,42 @@ function enableModel() {
 /** Facts about the name model download, for the sheets. */
 function modelFacts() {
   return `<ul class="facts">
-    <li><span>Download</span><b>about ${NAME_MODEL_SIZE_MB} MB, once</b></li>
+    <li><span>Size</span><b>about ${NAME_MODEL_SIZE_MB} MB, downloaded once</b></li>
     <li><span>From</span><b>Hugging Face (huggingface.co)</b></li>
-    <li><span>Runs</span><b>on this device</b></li>
-    <li><span>Pasted text</span><b>never leaves your browser</b></li>
-    <li><span>Checked</span><b>fixed version, SHA-256 verified</b></li>
+    <li><span>Saved to</span><b>this computer, inside Chrome, in SafePaste's own storage</b></li>
+    <li><span>Not saved to</span><b>your Downloads folder or any file you manage</b></li>
+    <li><span>Removed</span><b>with “Delete download”, or when you remove SafePaste</b></li>
+    <li><span>Runs</span><b>on this computer; pasted text never leaves Chrome</b></li>
+    <li><span>Checked</span><b>one fixed version, SHA-256 verified</b></li>
   </ul>`;
+}
+
+/** Megabytes this extension currently stores (mostly the model), or null. */
+async function storedMegabytes() {
+  try {
+    if (!(await caches.has(MODEL_CACHE))) {
+      return 0;
+    }
+    const estimate = await navigator.storage.estimate();
+    return Math.round((estimate.usage || 0) / 1e6);
+  } catch (_error) {
+    return null;
+  }
+}
+
+/** Stops the model, deletes its files, and turns the feature off. */
+async function deleteModel() {
+  const before = await storedMegabytes();
+  try {
+    await chrome.runtime.sendMessage({ type: MESSAGES.unload });
+    await caches.delete(MODEL_CACHE);
+  } catch (_error) {
+    // Reported below by the size check.
+  }
+  modelStatus = { state: "absent" };
+  const left = await storedMegabytes();
+  modelNote = left === 0 ? `Download deleted · ${before || NAME_MODEL_SIZE_MB} MB freed` : "Could not delete the download";
+  updateSettings({ nameModel: false });
 }
 
 /** @param {string} type */
@@ -190,9 +238,10 @@ function renderModelStatus() {
   nameModelStatus.className = "row-status";
   progress.hidden = true;
   if (!nameModel.checked || !modelStatus) {
-    nameModelStatus.textContent = "";
+    nameModelStatus.textContent = nameModel.checked ? "" : modelNote;
     return;
   }
+  modelNote = "";
   switch (modelStatus.state) {
     case "ready":
       nameModelStatus.classList.add("ok");
@@ -222,9 +271,9 @@ function renderModelStatus() {
 }
 
 /**
- * @param {{ title: string, body: string, primary: string, secondary?: string, opener: HTMLElement, onPrimary?: () => void }} options
+ * @param {{ title: string, body: string, primary: string, secondary?: string, opener: HTMLElement, onPrimary?: () => void, onSecondary?: () => void }} options
  */
-function openSheet({ title, body, primary, secondary, opener, onPrimary }) {
+function openSheet({ title, body, primary, secondary, opener, onPrimary, onSecondary }) {
   const layer = byId("sheet");
   const primaryButton = /** @type {HTMLButtonElement} */ (byId("sheetPrimary"));
   const secondaryButton = /** @type {HTMLButtonElement} */ (byId("sheetSecondary"));
@@ -239,7 +288,12 @@ function openSheet({ title, body, primary, secondary, opener, onPrimary }) {
       onPrimary();
     }
   };
-  secondaryButton.onclick = closeSheet;
+  secondaryButton.onclick = () => {
+    closeSheet();
+    if (onSecondary) {
+      onSecondary();
+    }
+  };
   layer.onclick = (event) => {
     if (event.target === layer) {
       closeSheet();
@@ -250,7 +304,9 @@ function openSheet({ title, body, primary, secondary, opener, onPrimary }) {
   for (const view of [homeView, typesView]) {
     view.inert = true;
   }
-  primaryButton.focus();
+  // Keep the top of the sheet in view; focusing the button would scroll down.
+  byId("sheet").querySelector(".sheet")?.scrollTo(0, 0);
+  primaryButton.focus({ preventScroll: true });
 }
 
 function closeSheet() {

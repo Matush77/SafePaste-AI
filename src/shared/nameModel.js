@@ -28,6 +28,7 @@ export const MESSAGES = /** @type {const} */ ({
   detect: "nameModel:detect", // { text } -> { candidates } | { error }
   prepare: "nameModel:prepare", // start loading/downloading -> { status }
   status: "nameModel:status", // -> { status }
+  unload: "nameModel:unload", // stop the running model (before its files are deleted) -> { ok }
   // Broadcast by the offscreen document while loading.
   progress: "nameModel:progress" // { status }
 });
