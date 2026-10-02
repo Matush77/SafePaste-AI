@@ -345,7 +345,7 @@ async function renderStoreImages(shots) {
   ), 1280, 800, "screenshot-4-1280x800.png");
 
   await render(shot(
-    { eyebrow: "Private by design", title: "Everything stays on your computer.", text: "No account and no servers. Choose how strict to be, what to hide, and where SafePaste works.", points: ["Works on ChatGPT, Gemini, Claude, Perplexity, Mistral and Grok", "Blocks a paste it cannot check, never sends it unchecked", "Free, with no tracking"] },
+    { eyebrow: "Private by design", title: "Everything stays on your computer.", text: "No account and no servers. Choose how strict to be, what to hide, and where SafePaste works.", points: ["Works on ChatGPT, Gemini, Claude, Perplexity, Mistral, Grok and Poe", "Blocks a paste it cannot check, never sends it unchecked", "Free, with no tracking"] },
     `<div class="pair"><img class="ui popup" src="${shots.popup}" alt=""><img class="ui popup" src="${shots["popup-sites"]}" alt=""></div>`
   ), 1280, 800, "screenshot-5-1280x800.png");
 

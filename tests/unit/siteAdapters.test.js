@@ -45,6 +45,9 @@ describe("optional sites", () => {
 
     const grok = mount(`<form><textarea aria-label="Ask Grok anything" data-target></textarea></form><textarea aria-hidden="true" tabindex="-1"></textarea>`);
     expect(promptEditableFromEvent(eventAt(grok), { id: "grok", name: "Grok" })).toBe(grok);
+
+    const poe = mount(`<div class="ChatMessageInputContainer_inputContainer__s2AGa"><textarea class="GrowingTextArea_textArea__ZWQbP" placeholder="Start a new chat" data-target></textarea></div>`);
+    expect(promptEditableFromEvent(eventAt(poe), { id: "poe", name: "Poe" })).toBe(poe);
   });
 });
 

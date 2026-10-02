@@ -5,7 +5,7 @@
 // this list never adds a permission warning for existing users.
 
 /**
- * @typedef {"chatgpt" | "gemini" | "claude" | "perplexity" | "mistral" | "grok"} SiteId
+ * @typedef {"chatgpt" | "gemini" | "claude" | "perplexity" | "mistral" | "grok" | "poe"} SiteId
  *
  * @typedef {object} SiteInfo
  * @property {SiteId} id
@@ -21,7 +21,8 @@ export const SITE_LIST = [
   { id: "claude", name: "Claude", hosts: ["claude.ai"], optional: false },
   { id: "perplexity", name: "Perplexity", hosts: ["www.perplexity.ai", "perplexity.ai"], optional: true },
   { id: "mistral", name: "Mistral Le Chat", hosts: ["chat.mistral.ai"], optional: true },
-  { id: "grok", name: "Grok", hosts: ["grok.com"], optional: true }
+  { id: "grok", name: "Grok", hosts: ["grok.com"], optional: true },
+  { id: "poe", name: "Poe", hosts: ["poe.com"], optional: true }
 ];
 
 export const OPTIONAL_SITES = SITE_LIST.filter((site) => site.optional);

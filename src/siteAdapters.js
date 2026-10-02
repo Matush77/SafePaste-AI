@@ -51,6 +51,11 @@ const PROMPT_SELECTORS = {
   grok: [
     "textarea[aria-label]:not([aria-hidden='true'])",
     "form textarea:not([aria-hidden='true'])"
+  ],
+  // CSS-module class names: match the stable part, not the generated suffix.
+  poe: [
+    "textarea[class*='GrowingTextArea_textArea']",
+    "[class*='ChatMessageInputContainer'] textarea"
   ]
 };
 
