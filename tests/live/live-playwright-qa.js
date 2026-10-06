@@ -26,8 +26,8 @@ const CONTACT_SAMPLE = [
   "Do not send this. This is a redaction QA paste.",
   "Contact Dr. Jane Smith at jane.smith@example.com or +1 415-555-0199.",
   "Use test card 4111 1111 1111 1111 and token sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890.",
-  "906 W 2ND AVE, STE 100",
-  "SPOKANE, WA 99201-4540, United States"
+  "418 W 9TH AVE, STE 200",
+  "SPOKANE, WA 99201-1180, United States"
 ].join("\n");
 
 const SITES = [
@@ -79,7 +79,7 @@ const CHECKS = [
       for (const placeholder of ["PERSON_1", "EMAIL_1", "PHONE_1", "CREDIT_CARD_1", "OPENAI_API_KEY_1", "ADDRESS_1"]) {
         assert.ok(text.includes(`[[${placeholder}]]`), `missing [[${placeholder}]]`);
       }
-      assertNoLeak(text, ["Jane Smith", "jane.smith@example.com", "415-555-0199", "4111 1111 1111 1111", "sk-proj-AbCd", "906 W 2ND AVE", "SPOKANE, WA 99201"]);
+      assertNoLeak(text, ["Jane Smith", "jane.smith@example.com", "415-555-0199", "4111 1111 1111 1111", "sk-proj-AbCd", "418 W 9TH AVE", "SPOKANE, WA 99201"]);
     }
   },
   {

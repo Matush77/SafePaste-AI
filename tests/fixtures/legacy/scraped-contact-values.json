@@ -1,655 +1,655 @@
 {
-  "note": "Snapshot of contact values scraped on 2026-09-28 from public institutional contact pages by the old tests/real-world-scraped-100.js. Candidates were found with regexes, so this set only covers formats regexes already recognise.",
+  "note": "Fictional contact values in the formats found on public institutional contact pages (the formats the first version of the extension was tested against). Organisations, streets, people, e-mail domains (reserved .example TLD) and phone numbers (555-01xx) are made up; cities, states and ZIP codes are kept for realistic formats.",
   "sources": [
     {
-      "url": "https://www.mit.edu/contact",
+      "url": "https://www.bayfield.example/contact",
       "status": 200
     },
     {
-      "url": "https://isn.mit.edu/contact-isn",
+      "url": "https://isn.bayfield.example/contact-isn",
       "status": 200
     },
     {
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html",
       "status": 200
     },
     {
-      "url": "https://www.ndsu.edu/international/about/contact_us",
+      "url": "https://www.lpsu.example/international/about/contact_us",
       "status": 200
     },
     {
-      "url": "https://www.paloalto.gov/About/Contact-Us",
+      "url": "https://www.oakridge-city.example/About/Contact-Us",
       "status": 200
     },
     {
-      "url": "https://global.iu.edu/about/contact/index.html",
+      "url": "https://global.hoosierstate.example/about/contact/index.html",
       "status": 200
     },
     {
-      "url": "https://www.uow.edu.au/about/contacts/",
+      "url": "https://www.harbourside.example/about/contacts/",
       "status": 200
     },
     {
-      "url": "https://www.propublica.org/contact",
+      "url": "https://www.newsdesk.example/contact",
       "status": 200
     },
     {
-      "url": "https://www.northwestu.edu/international/contact",
+      "url": "https://www.cascadehills.example/international/contact",
       "status": 200
     },
     {
-      "url": "https://www.cityofmadison.com/contact",
+      "url": "https://www.lakecity.example/contact",
       "status": 200
     },
     {
-      "url": "https://www.who.int/about/contact-us",
+      "url": "https://www.globalhealth.example/about/contact-us",
       "status": 200
     },
     {
-      "url": "https://www.sfu.ca/contact.html",
+      "url": "https://www.westcoast.example/contact.html",
       "status": 200
     }
   ],
   "candidates": [
     {
       "type": "email",
-      "value": "admissions@mit.edu",
-      "url": "https://www.mit.edu/contact"
+      "value": "admissions@bayfield.example",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "email",
-      "value": "aacomments@mit.edu",
-      "url": "https://www.mit.edu/contact"
+      "value": "aacomments@bayfield.example",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "email",
-      "value": "campus-map@mit.edu",
-      "url": "https://www.mit.edu/contact"
+      "value": "campus-map@bayfield.example",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "phone",
-      "value": "617-253-1000",
-      "url": "https://www.mit.edu/contact"
+      "value": "617-555-0100",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "city_state_zip",
-      "value": "Massachusetts Avenue Cambridge, MA 02139",
-      "url": "https://www.mit.edu/contact"
+      "value": "Brattle Avenue Cambridge, MA 02139",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "street_address",
-      "value": "77 Massachusetts Avenue",
-      "url": "https://www.mit.edu/contact"
+      "value": "64 Brattle Avenue",
+      "url": "https://www.bayfield.example/contact"
     },
     {
       "type": "email",
-      "value": "fhadley@mit.edu",
-      "url": "https://isn.mit.edu/contact-isn"
+      "value": "jmarlow@bayfield.example",
+      "url": "https://isn.bayfield.example/contact-isn"
     },
     {
       "type": "email",
-      "value": "isn@mit.edu",
-      "url": "https://isn.mit.edu/contact-isn"
+      "value": "isn@bayfield.example",
+      "url": "https://isn.bayfield.example/contact-isn"
     },
     {
       "type": "phone",
-      "value": "617.324.4700",
-      "url": "https://isn.mit.edu/contact-isn"
+      "value": "617.555.0101",
+      "url": "https://isn.bayfield.example/contact-isn"
     },
     {
       "type": "city_state_zip",
       "value": "Cambridge, MA 02139",
-      "url": "https://isn.mit.edu/contact-isn"
+      "url": "https://isn.bayfield.example/contact-isn"
     },
     {
       "type": "street_address",
-      "value": "500 Technology Square",
-      "url": "https://isn.mit.edu/contact-isn"
+      "value": "120 Innovation Square",
+      "url": "https://isn.bayfield.example/contact-isn"
     },
     {
       "type": "email",
-      "value": "international.recruitment@lamar.edu",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "international.recruitment@redbird.example",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "email",
-      "value": "luadmtran@lamar.edu",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "luadmtran@redbird.example",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "email",
-      "value": "admissions@lamar.edu",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "admissions@redbird.example",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "email",
-      "value": "gradmissions@lamar.edu",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "gradmissions@redbird.example",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "email",
-      "value": "internationaladmissions@lamar.edu",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "internationaladmissions@redbird.example",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "phone",
-      "value": "+1 (409) 790-4768",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "+1 (409) 555-0100",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "phone",
-      "value": "+1 (409) 880-2333",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "+1 (409) 555-0101",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "phone",
-      "value": "710 (409) 880-7011",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "710 (409) 555-0102",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "po_box",
-      "value": "P.O. Box 10009",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "P.O. Box 20417",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "city_state_zip",
-      "value": "Redbird Lane Beaumont, TX 77710",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "Kestrel Lane Beaumont, TX 77710",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "street_address",
-      "value": "211 Redbird Lane",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "318 Kestrel Lane",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "street_address",
-      "value": "4400 MLK Blvd",
-      "url": "https://www.lamar.edu/admissions/how-to-apply/international/contact.html"
+      "value": "2750 MLK Blvd",
+      "url": "https://www.redbird.example/admissions/how-to-apply/international/contact.html"
     },
     {
       "type": "email",
-      "value": "NDSU.iss@ndsu.edu",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "LPSU.iss@lpsu.example",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "email",
-      "value": "ndsu.studyabroad@ndsu.edu",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "lpsu.studyabroad@lpsu.example",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "email",
-      "value": "NDSU.intl.admissions@ndsu.edu",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "LPSU.intl.admissions@lpsu.example",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "email",
-      "value": "NDSU.International@ndsu.edu",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "LPSU.International@lpsu.example",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "phone",
-      "value": "701-231-7895",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "701-555-0100",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "phone",
-      "value": "(701) 231-7895",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "(701) 555-0100",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "po_box",
-      "value": "P.O. Box 6050",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "P.O. Box 7315",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "city_state_zip",
       "value": "Fargo, ND 58108",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "city_state_zip",
       "value": "Fargo, ND 58102",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "street_address",
-      "value": "1401 Administration Ave",
-      "url": "https://www.ndsu.edu/international/about/contact_us"
+      "value": "1620 Commons Ave",
+      "url": "https://www.lpsu.example/international/about/contact_us"
     },
     {
       "type": "email",
-      "value": "adminsvcs@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "adminsvcs@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "enjoyonline@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "enjoyonline@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "parks@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "parks@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "fire@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "fire@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "HR@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "HR@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "OfficeOfTheCIO@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "OfficeOfTheCIO@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "pa.library@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "pa.library@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "OES@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "OES@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "planner@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "planner@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "building@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "building@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "pd@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "pd@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "pwd@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "pwd@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "UtilitiesCustomerService@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "UtilitiesCustomerService@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "citymgr@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "citymgr@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "city.attorney@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "city.attorney@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "city.auditor@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "city.auditor@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "city.clerk@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "city.clerk@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "city.council@paloalto.gov",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "city.council@oakridge-city.example",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "phone",
-      "value": "(650) 329-2100",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "(650) 555-0104",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "city_state_zip",
       "value": "Palo Alto, CA 94301",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "city_state_zip",
-      "value": "Hamilton Avenue Palo Alto, CA 94301",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "Waverley Avenue Palo Alto, CA 94301",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "street_address",
-      "value": "250 Hamilton Ave",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "375 Waverley Ave",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "street_address",
-      "value": "250 Hamilton Avenue",
-      "url": "https://www.paloalto.gov/About/Contact-Us"
+      "value": "375 Waverley Avenue",
+      "url": "https://www.oakridge-city.example/About/Contact-Us"
     },
     {
       "type": "email",
-      "value": "ois@iu.edu",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "ois@hoosierstate.example",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "email",
-      "value": "newtoiu@iu.edu",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "newstudents@hoosierstate.example",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "email",
-      "value": "edabroad@iu.edu",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "edabroad@hoosierstate.example",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "812-855-8669",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "812-555-0100",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "812-856-1328",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "812-555-0101",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "317-274-7000",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "317-555-0100",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "317-278-2213",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "317-555-0101",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "812-855-9086",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "812-555-0102",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "812-855-4418",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "812-555-0103",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "812-855-9304",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "812-555-0104",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "(812) 856-5523",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "(812) 555-0105",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "phone",
-      "value": "(812) 855-6660",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "(812) 555-0106",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "city_state_zip",
-      "value": "N Eagleson Ave Bloomington, IN 47405",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "N Fairview Ave Bloomington, IN 47405",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "city_state_zip",
-      "value": "W. New York Street Indianapolis, IN 46202",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "W. Ashland Street Indianapolis, IN 46202",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "street_address",
-      "value": "330 N Eagleson Ave",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "415 N Fairview Ave",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "street_address",
-      "value": "902 W. New York Street",
-      "url": "https://global.iu.edu/about/contact/index.html"
+      "value": "780 W. Ashland Street",
+      "url": "https://global.hoosierstate.example/about/contact/index.html"
     },
     {
       "type": "email",
-      "value": "support-wellbeing@uow.edu.au",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "support-wellbeing@harbourside.example",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 3218",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0100",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 3927",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0101",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 3555",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0102",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 3386",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0103",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 4227",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0104",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 4221 5115",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0105",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "international_phone",
-      "value": "+61 2 9266 1300",
-      "url": "https://www.uow.edu.au/about/contacts/"
+      "value": "+61 2 5550 0106",
+      "url": "https://www.harbourside.example/about/contacts/"
     },
     {
       "type": "phone",
-      "value": "212-514-5250",
-      "url": "https://www.propublica.org/contact"
+      "value": "212-555-0100",
+      "url": "https://www.newsdesk.example/contact"
     },
     {
       "type": "phone",
-      "value": "708-967-5720",
-      "url": "https://www.propublica.org/contact"
+      "value": "708-555-0100",
+      "url": "https://www.newsdesk.example/contact"
     },
     {
       "type": "phone",
-      "value": "917-512-0252",
-      "url": "https://www.propublica.org/contact"
+      "value": "917-555-0100",
+      "url": "https://www.newsdesk.example/contact"
     },
     {
       "type": "city_state_zip",
       "value": "Floor New York, NY 10013",
-      "url": "https://www.propublica.org/contact"
+      "url": "https://www.newsdesk.example/contact"
     },
     {
       "type": "email",
-      "value": "international@northwestu.edu",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "international@cascadehills.example",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "email",
-      "value": "skye.cornell@northwestu.edu",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "tessa.lindqvist@cascadehills.example",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "email",
-      "value": "cele@northwestu.edu",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "cele@cascadehills.example",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "email",
-      "value": "davis.gibson@northwestu.edu",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "marcus.ellery@cascadehills.example",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "email",
-      "value": "info@northwestu.edu",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "info@cascadehills.example",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "phone",
-      "value": "425-889-6280",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "425-555-0106",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "phone",
-      "value": "425-889-5363",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "425-555-0115",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "phone",
-      "value": "425-822-8266",
-      "url": "https://www.northwestu.edu/international/contact"
+      "value": "425-555-0100",
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "city_state_zip",
       "value": "Ave. NE Kirkland, WA 98033",
-      "url": "https://www.northwestu.edu/international/contact"
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "city_state_zip",
       "value": "Ave. N.E. Kirkland, WA 98033",
-      "url": "https://www.northwestu.edu/international/contact"
+      "url": "https://www.cascadehills.example/international/contact"
     },
     {
       "type": "email",
-      "value": "madisonmayor@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "citymayor@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "voting@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "voting@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "licensing@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "licensing@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "mymetrobus@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "mymetrobus@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "parking@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "parking@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "assessor@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "assessor@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "treasurer@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "treasurer@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "streets@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "streets@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "traffic@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "traffic@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "attorney@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "attorney@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "bldginspect@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "bldginspect@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "dcr@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "dcr@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "clerk@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "clerk@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "cdd@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "cdd@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "engineering@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "engineering@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "finance@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "finance@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "fleet@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "fleet@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "housing@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "housing@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "hr@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "hr@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "it@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "it@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "library@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "library@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "seniorcenter@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "seniorcenter@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "mononaterrace@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "lakeviewterrace@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "planning@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "planning@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "health@publichealthmdc.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "health@lakecityhealth.example",
+      "url": "https://www.lakecity.example/contact"
     },
     {
       "type": "email",
-      "value": "publicworks@cityofmadison.com",
-      "url": "https://www.cityofmadison.com/contact"
+      "value": "publicworks@lakecity.example",
+      "url": "https://www.lakecity.example/contact"
     }
   ]
 }
